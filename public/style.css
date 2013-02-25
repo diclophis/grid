@@ -1,0 +1,25 @@
+
+      #canvas-container, canvas, body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      canvas, svg {
+        image-rendering: optimizeSpeed;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+        -ms-interpolation-mode: nearest-neighbor;
+        -webkit-touch-callout: none;
+        -webkit-text-size-adjust: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); 
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); 
+      }
+      #fullscreen-button {
+        position: absolute; top: 0; left: 0;
+        background-color: red;
+        width: 10%; height: 10%;
+      }
