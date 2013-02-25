@@ -3,7 +3,7 @@ var tick = function() {
 
   var dt = createDeltaTime.apply(this);
 
-  this.forward_angle += dt * 1;
+  this.forward_angle += dt * 1.0;
 
   var skid = (this.leftVector.x * 1.0);
   var drift = this.foward.clone();
@@ -22,8 +22,37 @@ var tick = function() {
 
     var whereCarIsPointing = this.ball.position.clone().add(drift);
 
-    this.camera.lookAt(reallyFarOut);
-    this.camera.position.set(0 + reallyFarBack.x, 10.0, 0 + reallyFarBack.z);
+    //this.camera.lookAt(reallyFarOut);
+    this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
+    this.camera.position = (this.nodes[3].position);
+    //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
+  }
+
+  //var d = parseInt(this.st * 0.5) % 4;
+  //var dd = (parseInt(this.st * 0.5) + 1) % 4
+  //console.log(parseInt(this.st * 0.1) % 2);
+
+  this.resetTimer += dt;
+
+  if (this.resetTimer > this.resetTimeout) {
+    this.resetTimer = 0.0;
+    //(parseInt(this.st * 0.5) % 4) == 0) {
+    //attachEdgeToNode(edges[0], nodes[0], 3);
+    //attachEdgeToNode(edges[0], nodes[0], 3);
+    var d = 0;
+    var f = 0;
+    var g = 0;
+
+    for (var i=0; i<20 - 1; i++) {
+      d = parseInt(Math.random() * 4.0);
+
+      //console.log("connecting edge", i, " to node ", i);
+      attachEdgeToNode(this.edges[i], this.nodes[i], d % 4);
+      //console.log("connecting node", i+1, " to edge ", i);
+      placeNodeAtEdge(this.nodes[i+1], this.edges[i]);
+      this.nodes[i+1].position.y = i * 2;
+      g++;
+    }
   }
 
   this.camera.updateProjectionMatrix();
@@ -31,7 +60,7 @@ var tick = function() {
 
   this.renderer.clear(false, true, false);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
-    this.renderer.render(this.scene, this.camera);
+  this.renderer.render(this.scene, this.camera);
 };
 
 var createBall = function() {
@@ -45,7 +74,7 @@ var createBall = function() {
   return ballObject;
 };
 
-var createNodeBase = function(nodeMaterial) {
+var createNodeObject = function(nodeMaterial) {
   var x = 16.0;
   var y = 1.0;
   var z = 16.0;
@@ -57,6 +86,50 @@ var createNodeBase = function(nodeMaterial) {
   return nodeObject;
 };
 
+var createEdgeObject = function(edgeMaterial) {
+  var x = 16.0;
+  var y = 1.0;
+  var z = 2.0;
+
+  var edgeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
+  var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
+  var edgeObject = new THREE.Object3D();
+  edgeObject.add(edgeMesh);
+  return edgeObject;
+};
+
+var attachEdgeToNode = (function() {
+  // position is one of 0, 1, 2, 3
+  var edgePosition = new Array();
+  var edgeDirection = new Array();
+
+  edgePosition[0] = new THREE.Vector3(0, 0, 16);
+  edgeDirection[0] = new THREE.Vector3(16, 0, 16);
+
+  edgePosition[1] = new THREE.Vector3(16, 0, 0);
+  edgeDirection[1] = new THREE.Vector3(16, 0, -16);
+
+  edgePosition[2] = new THREE.Vector3(0, 0, -16);
+  edgeDirection[2] = new THREE.Vector3(-16, 0, -16);
+
+  edgePosition[3] = new THREE.Vector3(-16, 0, 0);
+  edgeDirection[3] = new THREE.Vector3(-16, 0, 16);
+
+  return function(edge, node, position) {
+    edge.position.addVectors(edgePosition[position], node.position);
+    var la = new THREE.Vector3();
+    la.addVectors(node.position, edgeDirection[position]);
+    edge.lookAt(la);
+  }
+})();
+
+var placeNodeAtEdge = function(node, edge) {
+  var d = -16.0;
+  edge.translateX(d);
+  node.position = edge.position.clone();
+  edge.translateX(-d);
+};
+  
 var main = function(body) {
 
   var wsa = windowSizeAndAspect();
@@ -76,7 +149,7 @@ var main = function(body) {
   }, false);
 
 
-  var camera = createCamera(wsa, 2000);
+  var camera = createCamera(wsa, 2000, 30);
   var scene = createScene();
 
   var directionalLight = createDirectionalLight();
@@ -85,7 +158,7 @@ var main = function(body) {
   var pointLight = createPointLight();
   scene.add(pointLight);
 
-  var skyBoxCamera = createCamera(wsa, 1000);
+  var skyBoxCamera = createCamera(wsa, 1000, 30);
   var skyBoxScene = createScene();
   var skyBoxMaterial = createMeshBasicWireframeMaterial();
   var skyBox = createSkyBox(skyBoxMaterial);
@@ -101,9 +174,25 @@ var main = function(body) {
   var ball = createBall();
   scene.add(ball);
 
-  var baseNodeMaterial = createMeshBasicWireframeMaterial();
-  var baseNode = createNodeBase(baseNodeMaterial);
-  scene.add(baseNode);
+  var nodes = new Array();
+  var edges = new Array();
+
+  var max = 20;
+
+  for (var i=0; i<max; i++) {
+    var baseNodeMaterial = createMeshBasicWireframeMaterial();
+    var baseNode = createNodeObject(baseNodeMaterial);
+    scene.add(baseNode);
+    nodes.push(baseNode);
+  }
+
+  for (var i=0; i<max - 1; i++) {
+    var baseEdgeMaterial = createMeshBasicWireframeMaterial();
+    var baseEdge = createEdgeObject(baseEdgeMaterial);
+    scene.add(baseEdge);
+    edges.push(baseEdge);
+  }
+
 
   var thingy = {
     fps: 35.0,
@@ -123,11 +212,16 @@ var main = function(body) {
     scene: scene,
     paused: false,
     renderer: renderer,
+    container: container,
     scene: scene,
     dirty: false,
     //
     ball: ball,
     forward_angle: 0,
+    edges: edges,
+    nodes: nodes,
+    resetTimeout: 2.0,
+    resetTimer: 0.0,
   };
 
   // event listeners
