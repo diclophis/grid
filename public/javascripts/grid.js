@@ -5,21 +5,21 @@ var tick = function() {
 //console.log(dt * 1000);
 
 //console.log(dt);
-  this.forward_angle += dt * 1.0;
+  this.forward_angle += dt * 0.1;
 
   //var skid = 0; //(this.leftVector.x * 1.0);
   //var drift = this.foward.clone();
   //drift.x = Math.cos(this.forward_angle + skid);
   //drift.z = Math.sin(this.forward_angle + skid);
-  this.foward.x = Math.cos(this.forward_angle);
-  this.foward.z = Math.sin(this.forward_angle);
+  //this.foward.x = Math.cos(this.forward_angle);
+  //this.foward.z = Math.sin(this.forward_angle);
 
 
-    var farForward = this.foward.clone().multiplyScalar(100.0); //how far in front
-    var farBack = this.foward.clone().negate().multiplyScalar(150.0); //how far in back
+    //var farForward = this.foward.clone().multiplyScalar(100.0); //how far in front
+    //var farBack = this.foward.clone().negate().multiplyScalar(150.0); //how far in back
 
-    var reallyFarOut = this.ball.position.clone().add(farForward);
-    var reallyFarBack = this.ball.position.clone().add(farBack);
+    //var reallyFarOut = this.ball.position.clone().add(farForward);
+    //var reallyFarBack = this.ball.position.clone().add(farBack);
 
     //var whereCarIsPointing = this.ball.position.clone().add(this.foward);
 
@@ -28,17 +28,20 @@ var tick = function() {
     ////this.camera.position = (this.nodes[3].position);
     //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
 
-  //this.ball.matrix.rotateY(this.forward_angle);
-  this.ball.rotation.y = this.forward_angle;
+  this.ball.rotation.y = (this.forward_angle);
 
-  var d = 10.0;
+  var d = 50.0;
 
-  this.ball.translateX(d);
+  this.ball.translateX(d * 0.1);
   var front_of_ball = this.ball.position.clone();
   this.ball.translateX(-d);
 
+  this.ball.translateX(-d * 0.1);
+  var back_of_ball = this.ball.position.clone();
+  this.ball.translateX(d);
+
     this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
-    this.camera.position.set(10, 100, 10);
+    this.camera.position.set((back_of_ball.x), 5, (back_of_ball.z));
 
   //var d = parseInt(this.st * 0.5) % 4;
   //var dd = (parseInt(this.st * 0.5) + 1) % 4
@@ -71,14 +74,31 @@ var tick = function() {
 
   //this.camera.updateProjectionMatrix();
   this.skyBoxCamera.rotation.copy(this.camera.rotation);
+  this.debugCameraHelper.visible = false;
 
   //this.renderer.clear(false, true, false);
+
+  this.renderer.setViewport(0, 0, this.wsa.x, this.wsa.y);
   this.renderer.clear(true, true, true);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
-
-
+  this.debugCameraHelper.visible = true;
+  var view_left = 0.5;
+  var view_bottom = 0.5;
+  var view_width = 0.5;
+  var view_height = 0.5;
+  var left   = Math.floor(this.wsa.x  * view_left);
+  var bottom = Math.floor(this.wsa.y * view_bottom);
+  var width  = Math.floor(this.wsa.x  * view_width);
+  var height = Math.floor(this.wsa.y * view_height);
+  this.renderer.setViewport(left, bottom, width, height);
+  //this.renderer.setScissor(left, bottom, width, height);
+  //this.renderer.enableScissorTest(true);
+  //renderer.setClearColor( view.background, view.background.a );
+  this.debugCamera.aspect = width / height;
+  //this.debugCamera.updateProjectionMatrix();
+  this.renderer.render(this.scene, this.debugCamera);
 
 };
 
@@ -168,13 +188,16 @@ var main = function(body) {
   }, false);
 
 
-  var camera = createCamera(wsa, 2000, 30);
+  var camera = createCamera(wsa, 100, 10);
   var debugCamera = createCamera(wsa, 2000, 30);
 
-  debugCamera.position.set(100, 100, 100);
+  debugCamera.position.set(-200, 200, -200);
   debugCamera.lookAt(new THREE.Vector3(0, 0, 0));
 
   var scene = createScene();
+
+  var debugCameraHelper = new THREE.CameraHelper(camera);
+  scene.add(debugCameraHelper);
 
   var directionalLight = createDirectionalLight();
   scene.add(directionalLight);
@@ -197,7 +220,6 @@ var main = function(body) {
 
   var ball = createBall();
   scene.add(ball);
-  console.log(ball);
 
   var nodes = new Array();
   var edges = new Array();
@@ -227,6 +249,7 @@ var main = function(body) {
     skyBoxScene: skyBoxScene,
     camera: camera,
     debugCamera: debugCamera,
+    debugCameraHelper: debugCameraHelper,
     leftPointerID: -1,
     leftPointerStartPos: new THREE.Vector2(0, 0),
     leftPointerPos: new THREE.Vector2(0, 0),
