@@ -1,11 +1,12 @@
 var tick = function() {
+
   var dt = this.clock.getDelta();
-  requestAnimationFrame(tick.bind(this), this.container);
+  this.st += dt;
 
 //console.log(dt * 1000);
 
 //console.log(dt);
-  this.forward_angle += dt * 0.1;
+  this.forward_angle += dt;
 
   //var skid = 0; //(this.leftVector.x * 1.0);
   //var drift = this.foward.clone();
@@ -32,16 +33,17 @@ var tick = function() {
 
   var d = 50.0;
 
-  this.ball.translateX(d * 0.1);
+  this.ball.translateX(d);
   var front_of_ball = this.ball.position.clone();
   this.ball.translateX(-d);
 
-  this.ball.translateX(-d * 0.1);
+  this.ball.translateX(-d);
   var back_of_ball = this.ball.position.clone();
   this.ball.translateX(d);
 
-    this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
-    this.camera.position.set((back_of_ball.x), 5, (back_of_ball.z));
+  this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 5.0) + 10.0, (back_of_ball.z));
+  this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
+
 
   //var d = parseInt(this.st * 0.5) % 4;
   //var dd = (parseInt(this.st * 0.5) + 1) % 4
@@ -80,6 +82,8 @@ var tick = function() {
 
   this.renderer.setViewport(0, 0, this.wsa.x, this.wsa.y);
   this.renderer.clear(true, true, true);
+  this.camera.updateProjectionMatrix();
+  this.skyBoxCamera.updateProjectionMatrix();
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
@@ -97,8 +101,10 @@ var tick = function() {
   //this.renderer.enableScissorTest(true);
   //renderer.setClearColor( view.background, view.background.a );
   this.debugCamera.aspect = width / height;
-  //this.debugCamera.updateProjectionMatrix();
+  this.debugCamera.updateProjectionMatrix();
   this.renderer.render(this.scene, this.debugCamera);
+
+  requestAnimationFrame(tick.bind(this), this.container);
 
 };
 
@@ -188,10 +194,10 @@ var main = function(body) {
   }, false);
 
 
-  var camera = createCamera(wsa, 100, 10);
+  var camera = createCamera(wsa, 100, 45);
   var debugCamera = createCamera(wsa, 2000, 30);
 
-  debugCamera.position.set(-200, 200, -200);
+  debugCamera.position.set(-150, 150, -150);
   debugCamera.lookAt(new THREE.Vector3(0, 0, 0));
 
   var scene = createScene();
@@ -216,6 +222,7 @@ var main = function(body) {
   //renderer.setFaceCulling("back");
   renderer.setSize(wsa.x, wsa.y);
   renderer.autoClear = false;
+  renderer.setClearColorHex(0x000000, 1.0);
   container.appendChild(renderer.domElement);
 
   var ball = createBall();
