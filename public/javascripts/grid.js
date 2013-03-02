@@ -1,7 +1,7 @@
 var tick = function() {
   requestAnimationFrame(tick.bind(this));
 
-  var dt = createDeltaTime.apply(this);
+  var dt = this.clock.getDelta();
 
   this.forward_angle += dt * 1.0;
 
@@ -22,16 +22,17 @@ var tick = function() {
 
     var whereCarIsPointing = this.ball.position.clone().add(drift);
 
-    //this.camera.lookAt(reallyFarOut);
-    this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
-    this.camera.position = (this.nodes[3].position);
-    //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
+    this.camera.lookAt(reallyFarOut);
+    //this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
+    //this.camera.position = (this.nodes[3].position);
+    this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
   }
 
   //var d = parseInt(this.st * 0.5) % 4;
   //var dd = (parseInt(this.st * 0.5) + 1) % 4
   //console.log(parseInt(this.st * 0.1) % 2);
 
+  /*
   this.resetTimer += dt;
 
   if (this.resetTimer > this.resetTimeout) {
@@ -54,6 +55,7 @@ var tick = function() {
       g++;
     }
   }
+  */
 
   this.camera.updateProjectionMatrix();
   this.skyBoxCamera.rotation.copy(this.camera.rotation);
@@ -215,6 +217,7 @@ var main = function(body) {
     container: container,
     scene: scene,
     dirty: false,
+    clock: new THREE.Clock(true),
     //
     ball: ball,
     forward_angle: 0,
