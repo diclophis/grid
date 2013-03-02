@@ -6,7 +6,7 @@ var tick = function() {
 //console.log(dt * 1000);
 
 //console.log(dt);
-  this.forward_angle += dt;
+  this.forward_angle += dt * 0.0;
 
   //var skid = 0; //(this.leftVector.x * 1.0);
   //var drift = this.foward.clone();
@@ -29,7 +29,45 @@ var tick = function() {
     ////this.camera.position = (this.nodes[3].position);
     //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
 
+
+  this.resetTimer += dt;
+
+  if (this.resetTimer > this.resetTimeout) {
+    this.resetTimer = 0;
+
+    placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
+    attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], 1);
+
+    this.oldestNode++;
+    if (this.oldestNode >= this.nodes.length) {
+      this.oldestNode = 0;
+    }
+
+    this.currentNode++;
+    if (this.currentNode >= this.nodes.length) {
+      this.currentNode = 0;
+    }
+
+
+/*
+    this.currentNode++;
+    var lastNode = this.currentNode;
+    if (this.currentNode >= (this.nodes.length - 1)) {
+      this.currentNode = 0;
+    }
+
+    //attachEdgeToNode(this.edges[this.currentNode], this.nodes[this.currentNode], 1);
+    //placeNodeAtEdge(this.nodes[this.currentNode+1], this.edges[this.currentNode]);
+ console.log(lastNode, this.currentNode); 
+    placeNodeAtEdge(this.nodes[this.currentNode], this.edges[lastNode]);
+    attachEdgeToNode(this.edges[lastNode], this.nodes[lastNode], 1);
+*/
+
+  }
+
   this.ball.rotation.y = (this.forward_angle);
+
+  this.ball.translateX(50.0 * dt);
 
   var d = 50.0;
 
@@ -41,8 +79,11 @@ var tick = function() {
   var back_of_ball = this.ball.position.clone();
   this.ball.translateX(d);
 
-  this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 5.0) + 10.0, (back_of_ball.z));
+  this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
   this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
+
+  this.debugCamera.position.set(this.ball.position.x - 150, 150, this.ball.position.y - 150);
+  this.debugCamera.lookAt(this.ball.position);
 
 
   //var d = parseInt(this.st * 0.5) % 4;
@@ -78,12 +119,12 @@ var tick = function() {
   this.skyBoxCamera.rotation.copy(this.camera.rotation);
   this.debugCameraHelper.visible = false;
 
-  //this.renderer.clear(false, true, false);
 
   this.renderer.setViewport(0, 0, this.wsa.x, this.wsa.y);
+  //this.renderer.clear(false, true, false);
   this.renderer.clear(true, true, true);
-  this.camera.updateProjectionMatrix();
-  this.skyBoxCamera.updateProjectionMatrix();
+  //this.camera.updateProjectionMatrix();
+  //this.skyBoxCamera.updateProjectionMatrix();
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
@@ -101,11 +142,10 @@ var tick = function() {
   //this.renderer.enableScissorTest(true);
   //renderer.setClearColor( view.background, view.background.a );
   this.debugCamera.aspect = width / height;
-  this.debugCamera.updateProjectionMatrix();
+  //this.debugCamera.updateProjectionMatrix();
   this.renderer.render(this.scene, this.debugCamera);
 
-  requestAnimationFrame(tick.bind(this), this.container);
-
+  requestAnimationFrame(tick.bind(this));
 };
 
 var createBall = function() {
@@ -194,11 +234,8 @@ var main = function(body) {
   }, false);
 
 
-  var camera = createCamera(wsa, 100, 45);
+  var camera = createCamera(wsa, 200, 45);
   var debugCamera = createCamera(wsa, 2000, 30);
-
-  debugCamera.position.set(-150, 150, -150);
-  debugCamera.lookAt(new THREE.Vector3(0, 0, 0));
 
   var scene = createScene();
 
@@ -231,7 +268,7 @@ var main = function(body) {
   var nodes = new Array();
   var edges = new Array();
 
-  var max = 2;
+  var max = 4;
 
   for (var i=0; i<max; i++) {
     var baseNodeMaterial = createMeshBasicWireframeMaterial();
@@ -240,11 +277,17 @@ var main = function(body) {
     nodes.push(baseNode);
   }
 
-  for (var i=0; i<max - 1; i++) {
+  for (var i=0; i<max; i++) {
     var baseEdgeMaterial = createMeshBasicWireframeMaterial();
     var baseEdge = createEdgeObject(baseEdgeMaterial);
     scene.add(baseEdge);
     edges.push(baseEdge);
+  }
+
+  attachEdgeToNode(edges[0], nodes[0], 1);
+  for (var i=0; i<=(max - 2); i++) {
+    placeNodeAtEdge(nodes[i + 1], edges[i]);
+    attachEdgeToNode(edges[i + 1], nodes[i + 1], 1);
   }
 
   var thingy = {
@@ -276,8 +319,10 @@ var main = function(body) {
     forward_angle: 0,
     edges: edges,
     nodes: nodes,
-    resetTimeout: 2.0,
+    resetTimeout: 0.6375,
     resetTimer: 0.0,
+    currentNode: max - 1,
+    oldestNode: 0,
   };
 
   // event listeners
