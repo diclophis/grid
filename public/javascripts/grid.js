@@ -1,18 +1,19 @@
 var tick = function() {
-  requestAnimationFrame(tick.bind(this));
-
   var dt = this.clock.getDelta();
+  requestAnimationFrame(tick.bind(this), this.container);
 
+//console.log(dt * 1000);
+
+//console.log(dt);
   this.forward_angle += dt * 1.0;
 
-  var skid = (this.leftVector.x * 1.0);
-  var drift = this.foward.clone();
-  drift.x = Math.cos(this.forward_angle + skid);
-  drift.z = Math.sin(this.forward_angle + skid);
+  //var skid = 0; //(this.leftVector.x * 1.0);
+  //var drift = this.foward.clone();
+  //drift.x = Math.cos(this.forward_angle + skid);
+  //drift.z = Math.sin(this.forward_angle + skid);
   this.foward.x = Math.cos(this.forward_angle);
   this.foward.z = Math.sin(this.forward_angle);
 
-  if (this.ball != null) {
 
     var farForward = this.foward.clone().multiplyScalar(100.0); //how far in front
     var farBack = this.foward.clone().negate().multiplyScalar(150.0); //how far in back
@@ -20,13 +21,24 @@ var tick = function() {
     var reallyFarOut = this.ball.position.clone().add(farForward);
     var reallyFarBack = this.ball.position.clone().add(farBack);
 
-    var whereCarIsPointing = this.ball.position.clone().add(drift);
+    //var whereCarIsPointing = this.ball.position.clone().add(this.foward);
 
-    this.camera.lookAt(reallyFarOut);
-    //this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
-    //this.camera.position = (this.nodes[3].position);
-    this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
-  }
+    //this.camera.lookAt(reallyFarOut);
+    ////this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
+    ////this.camera.position = (this.nodes[3].position);
+    //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
+
+  //this.ball.matrix.rotateY(this.forward_angle);
+  this.ball.rotation.y = this.forward_angle;
+
+  var d = 10.0;
+
+  this.ball.translateX(d);
+  var front_of_ball = this.ball.position.clone();
+  this.ball.translateX(-d);
+
+    this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
+    this.camera.position.set(10, 100, 10);
 
   //var d = parseInt(this.st * 0.5) % 4;
   //var dd = (parseInt(this.st * 0.5) + 1) % 4
@@ -57,12 +69,17 @@ var tick = function() {
   }
   */
 
-  this.camera.updateProjectionMatrix();
+  //this.camera.updateProjectionMatrix();
   this.skyBoxCamera.rotation.copy(this.camera.rotation);
 
-  this.renderer.clear(false, true, false);
+  //this.renderer.clear(false, true, false);
+  this.renderer.clear(true, true, true);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
+
+
+
+
 };
 
 var createBall = function() {
@@ -152,6 +169,11 @@ var main = function(body) {
 
 
   var camera = createCamera(wsa, 2000, 30);
+  var debugCamera = createCamera(wsa, 2000, 30);
+
+  debugCamera.position.set(100, 100, 100);
+  debugCamera.lookAt(new THREE.Vector3(0, 0, 0));
+
   var scene = createScene();
 
   var directionalLight = createDirectionalLight();
@@ -175,11 +197,12 @@ var main = function(body) {
 
   var ball = createBall();
   scene.add(ball);
+  console.log(ball);
 
   var nodes = new Array();
   var edges = new Array();
 
-  var max = 20;
+  var max = 2;
 
   for (var i=0; i<max; i++) {
     var baseNodeMaterial = createMeshBasicWireframeMaterial();
@@ -195,7 +218,6 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
-
   var thingy = {
     fps: 35.0,
     then: Date.now(),
@@ -204,6 +226,7 @@ var main = function(body) {
     skyBoxCamera: skyBoxCamera,
     skyBoxScene: skyBoxScene,
     camera: camera,
+    debugCamera: debugCamera,
     leftPointerID: -1,
     leftPointerStartPos: new THREE.Vector2(0, 0),
     leftPointerPos: new THREE.Vector2(0, 0),
