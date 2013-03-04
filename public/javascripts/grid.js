@@ -182,7 +182,7 @@ var main = function(body) {
   var skyBoxCamera = createCamera(wsa, 1000, 30);
   var skyBoxScene = createScene();
   var skyBoxMaterial = createMeshBasicWireframeMaterial();
-  var skyBox = createSkyBox(skyBoxMaterial);
+  var skyBox = createSkyBox(skyBoxMaterial, 10);
   skyBoxScene.add(skyBox);
 
   var renderer = new THREE.WebGLRenderer({});
@@ -232,6 +232,48 @@ var main = function(body) {
     attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
     dirs.push(randomDir);
   }
+
+  /*
+  edgePosition[0] = new THREE.Vector3(0, 0, 16);
+  edgeDirection[0] = new THREE.Vector3(16, 0, 16);
+
+  edgePosition[1] = new THREE.Vector3(16, 0, 0);
+  edgeDirection[1] = new THREE.Vector3(16, 0, -16);
+
+  edgePosition[2] = new THREE.Vector3(0, 0, -16);
+  edgeDirection[2] = new THREE.Vector3(-16, 0, -16);
+
+  edgePosition[3] = new THREE.Vector3(-16, 0, 0);
+  edgeDirection[3] = new THREE.Vector3(-16, 0, 16);
+  */
+
+
+  var r = THREE.Math.degToRad(270);
+  /*
+  //var q = new THREE.Quaternion();
+  //q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r);
+  var v = new THREE.Vector3(0, 0, 0);
+  var m = new THREE.Matrix4();
+  //m.identity();
+  m.makeRotationY(r);
+  //console.log(m.extractRotation());
+  var f = v.applyMatrix4(m);
+  console.log(v, f, m, r);
+  */
+  var v = new THREE.Vector3(1, 0, 1);
+  //var axis = new THREE.Vector3(0, 1, 0);
+  //var m = new THREE.Matrix4().makeRotationAxis(axis, r);
+  var m = new THREE.Matrix4().makeRotationY(r);
+
+  //m.multiplyVector3(v);
+  v.applyMatrix4(m);
+
+  console.log(v);
+
+  return;
+  //q.applyAxisAngle(new THREE.Vector3(0, 1, 0), r);
+  //v.setEulerFromQuaternion(q);
+  //console.log(q, v, r);
 
   var thingy = {
     fps: 35.0,
