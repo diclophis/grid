@@ -3,27 +3,23 @@ var tick = function() {
   var dt = this.clock.getDelta();
   this.st += dt;
 
-  var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), this.ball.position, 10);
-
-  this.scene.add(arrow);
-
+  //var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), this.ball.position, 10);
+  //this.scene.add(arrow);
 
   this.ballRayCaster.set(this.ball.position, new THREE.Vector3(0, -1, 0));
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
-  //console.log(nextNodeToIntersectWith);
-  //nextNodeToIntersectWith = 1;
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
 
-  this.resetTimer += dt;
-
+  //this.resetTimer += dt;
   //if (false && this.resetTimer > this.resetTimeout) {
   if (intersectsWithNode.length > 0) {
     //console.log(intersectsWithNode);
     //console.log(this.ball.position);
     //console.log(this.nodes[nextNodeToIntersectWith].position);
-    
+   
+    var newDir = dirNotInDir(this.dirs[this.currentNode]);
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
-    attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], 1);
+    attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
 
     this.oldestNode++;
     if (this.oldestNode >= this.nodes.length) {
@@ -34,21 +30,24 @@ var tick = function() {
     if (this.currentNode >= this.nodes.length) {
       this.currentNode = 0;
     }
-  //var currentDir = this.dirs[this.oldestNode];
-  //console.log("foo", this.oldestNode, currentDir, this.dirs);
-    //return;
-  }
 
+    this.dirs[this.currentNode] = newDir;
+  }
 
   //this.forward_angle += dt * 0.0;
   //this.ball.rotation.y = (this.forward_angle);
   //
+
+  //var currentDir = this.dirs[this.oldestNode];
+  //console.log(this.oldestNode, currentDir, this.dirs);
+  //var currentRot = 0.0;
+  //if (currentDir != 1) {
+  //  currentRot = THREE.Math.degToRad(currentDir * 90.00);
+  //}
   var currentDir = this.dirs[this.oldestNode];
-  console.log(this.oldestNode, currentDir, this.dirs);
-  var currentRot = 0.0;
-  if (currentDir != 1) {
-    currentRot = THREE.Math.degToRad(currentDir * 90.00);
-  }
+  var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
+  //console.log(currentRot);
+  //return;
 
   this.ball.rotation.y = currentRot;
 
@@ -67,7 +66,7 @@ var tick = function() {
   this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
   this.camera.lookAt(front_of_ball);
 
-  this.debugCamera.position.set(this.ball.position.x - 15, 15, this.ball.position.y - 15);
+  this.debugCamera.position.set(this.ball.position.x - 15, 15, this.ball.position.z - 15);
   this.debugCamera.lookAt(this.ball.position);
 
   //this.skyBoxCamera.rotation.copy(this.camera.rotation);
@@ -172,6 +171,14 @@ var placeNodeAtEdge = function(node, edge) {
   node.position = edge.position.clone();
   edge.translateX(-d);
 };
+
+var dirNotInDir = function(notDir) {
+  var dir = parseInt(Math.random() * 4);
+  if (dir === (((notDir + 8) - 2) % 4)) {
+    dir = (dir + 1) % 4;
+  }
+  return dir;
+};
   
 var main = function(body) {
 
@@ -241,13 +248,6 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
-  var dirNotInDir = function(notDir) {
-    var dir = parseInt(Math.random() * 4);
-    if (dir === (((notDir + 8) - 2) % 4)) {
-      dir = (dir + 1) % 4;
-    }
-    return dir;
-  };
 
   attachEdgeToNode(edges[0], nodes[0], 1);
   dirs.push(1);
