@@ -3,20 +3,11 @@ var tick = function() {
   var dt = this.clock.getDelta();
   this.st += dt;
 
-  //var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), this.ball.position, 10);
-  //this.scene.add(arrow);
-
-  this.ballRayCaster.set(this.ball.position, new THREE.Vector3(0, -1, 0));
+  this.ballRayCaster.set(this.ball.position, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
 
-  //this.resetTimer += dt;
-  //if (false && this.resetTimer > this.resetTimeout) {
   if (intersectsWithNode.length > 0) {
-    //console.log(intersectsWithNode);
-    //console.log(this.ball.position);
-    //console.log(this.nodes[nextNodeToIntersectWith].position);
-   
     var newDir = dirNotInDir(this.dirs[this.currentNode]);
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
@@ -34,20 +25,8 @@ var tick = function() {
     this.dirs[this.currentNode] = newDir;
   }
 
-  //this.forward_angle += dt * 0.0;
-  //this.ball.rotation.y = (this.forward_angle);
-  //
-
-  //var currentDir = this.dirs[this.oldestNode];
-  //console.log(this.oldestNode, currentDir, this.dirs);
-  //var currentRot = 0.0;
-  //if (currentDir != 1) {
-  //  currentRot = THREE.Math.degToRad(currentDir * 90.00);
-  //}
   var currentDir = this.dirs[this.oldestNode];
   var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
-  //console.log(currentRot);
-  //return;
 
   this.ball.rotation.y = currentRot;
 
@@ -152,10 +131,11 @@ var attachEdgeToNode = (function() {
     edgePosition.push(positionVector);
     edgeDirection.push(directionVector);
   }
+    
+  var la = new THREE.Vector3(0, 0, 0);
 
   return function(edge, node, position) {
     edge.position.addVectors(edgePosition[position], node.position);
-    var la = new THREE.Vector3(0, 0, 0);
     la.addVectors(node.position, edgeDirection[position]);
     edge.lookAt(la);
   }
@@ -292,6 +272,7 @@ var main = function(body) {
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
+    downDirectionVector: new THREE.Vector3(0, -1, 0),
   };
 
   // event listeners
