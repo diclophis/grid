@@ -120,6 +120,24 @@ var attachEdgeToNode = (function() {
   var edgePosition = new Array();
   var edgeDirection = new Array();
 
+  for (var i=0; i<4; i++) {
+    var r = THREE.Math.degToRad(i * 90.0);
+    var directionVector = new THREE.Vector3(1.00, 0, 1.00);
+    var positionVector = new THREE.Vector3(0, 0, 1.00);
+    var m = new THREE.Matrix4().makeRotationY(r);
+    directionVector.applyMatrix4(m);
+    positionVector.applyMatrix4(m);
+
+    directionVector.multiplyScalar(16.00);
+    positionVector.multiplyScalar(16.00);
+  
+    edgePosition.push(positionVector);
+    edgeDirection.push(directionVector);
+  }
+
+  /*
+  console.log(positionVector, directionVector);
+
   edgePosition[0] = new THREE.Vector3(0, 0, 16);
   edgeDirection[0] = new THREE.Vector3(16, 0, 16);
 
@@ -131,6 +149,7 @@ var attachEdgeToNode = (function() {
 
   edgePosition[3] = new THREE.Vector3(-16, 0, 0);
   edgeDirection[3] = new THREE.Vector3(-16, 0, 16);
+  */
 
   return function(edge, node, position) {
     edge.position.addVectors(edgePosition[position], node.position);
@@ -232,48 +251,6 @@ var main = function(body) {
     attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
     dirs.push(randomDir);
   }
-
-  /*
-  edgePosition[0] = new THREE.Vector3(0, 0, 16);
-  edgeDirection[0] = new THREE.Vector3(16, 0, 16);
-
-  edgePosition[1] = new THREE.Vector3(16, 0, 0);
-  edgeDirection[1] = new THREE.Vector3(16, 0, -16);
-
-  edgePosition[2] = new THREE.Vector3(0, 0, -16);
-  edgeDirection[2] = new THREE.Vector3(-16, 0, -16);
-
-  edgePosition[3] = new THREE.Vector3(-16, 0, 0);
-  edgeDirection[3] = new THREE.Vector3(-16, 0, 16);
-  */
-
-
-  var r = THREE.Math.degToRad(270);
-  /*
-  //var q = new THREE.Quaternion();
-  //q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r);
-  var v = new THREE.Vector3(0, 0, 0);
-  var m = new THREE.Matrix4();
-  //m.identity();
-  m.makeRotationY(r);
-  //console.log(m.extractRotation());
-  var f = v.applyMatrix4(m);
-  console.log(v, f, m, r);
-  */
-  var v = new THREE.Vector3(1, 0, 1);
-  //var axis = new THREE.Vector3(0, 1, 0);
-  //var m = new THREE.Matrix4().makeRotationAxis(axis, r);
-  var m = new THREE.Matrix4().makeRotationY(r);
-
-  //m.multiplyVector3(v);
-  v.applyMatrix4(m);
-
-  console.log(v);
-
-  return;
-  //q.applyAxisAngle(new THREE.Vector3(0, 1, 0), r);
-  //v.setEulerFromQuaternion(q);
-  //console.log(q, v, r);
 
   var thingy = {
     fps: 35.0,
