@@ -35,15 +35,15 @@ var tick = function() {
   var d = 50.0;
 
   this.ball.translateX(d);
-  var front_of_ball = this.ball.position.clone();
+  this.frontOfBall.copy(this.ball.position);
   this.ball.translateX(-d);
 
   this.ball.translateX(-d);
-  var back_of_ball = this.ball.position.clone();
+  this.backOfBall.copy(this.ball.position);
   this.ball.translateX(d);
 
-  this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
-  this.camera.lookAt(front_of_ball);
+  this.camera.position.set((this.backOfBall.x), (Math.sin(this.st) * 0.0) + 10.0, (this.backOfBall.z));
+  this.camera.lookAt(this.frontOfBall);
 
   this.debugCamera.position.set(this.ball.position.x - 25, 25, this.ball.position.z - 25);
   this.debugCamera.lookAt(this.ball.position);
@@ -273,6 +273,9 @@ var main = function(body) {
     currentNode: max - 1,
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
+    frontOfBall: new THREE.Vector3(0, 0, 0),
+    backOfBall: new THREE.Vector3(0, 0, 0),
+
   };
 
   // event listeners
