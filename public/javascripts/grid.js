@@ -3,20 +3,25 @@ var tick = function() {
   var dt = this.clock.getDelta();
   this.st += dt;
 
-  this.forward_angle += dt * 0.0;
+  var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), this.ball.position, 10);
+
+  this.scene.add(arrow);
+
 
   this.ballRayCaster.set(this.ball.position, new THREE.Vector3(0, -1, 0));
-  var nextNodeToIntersectWith = ((this.oldestNode + 2) % this.nodes.length);
-  var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith].children[0], false);
+  var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
+  //console.log(nextNodeToIntersectWith);
+  //nextNodeToIntersectWith = 1;
+  var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
 
   this.resetTimer += dt;
 
   //if (false && this.resetTimer > this.resetTimeout) {
-  if (false && intersectsWithNode.length > 0) {
-    console.log("wtf");
-
-    this.resetTimer = 0;
-
+  if (intersectsWithNode.length > 0) {
+    //console.log(intersectsWithNode);
+    //console.log(this.ball.position);
+    //console.log(this.nodes[nextNodeToIntersectWith].position);
+    
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], 1);
 
@@ -29,11 +34,25 @@ var tick = function() {
     if (this.currentNode >= this.nodes.length) {
       this.currentNode = 0;
     }
+  //var currentDir = this.dirs[this.oldestNode];
+  //console.log("foo", this.oldestNode, currentDir, this.dirs);
+    //return;
   }
 
-  this.ball.rotation.y = (this.forward_angle);
 
-  this.ball.translateX(0.0 * dt);
+  //this.forward_angle += dt * 0.0;
+  //this.ball.rotation.y = (this.forward_angle);
+  //
+  var currentDir = this.dirs[this.oldestNode];
+  console.log(this.oldestNode, currentDir, this.dirs);
+  var currentRot = 0.0;
+  if (currentDir != 1) {
+    currentRot = THREE.Math.degToRad(currentDir * 90.00);
+  }
+
+  this.ball.rotation.y = currentRot;
+
+  this.ball.translateX(10.0 * dt);
 
   var d = 50.0;
 
@@ -48,7 +67,7 @@ var tick = function() {
   this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
   this.camera.lookAt(front_of_ball);
 
-  this.debugCamera.position.set(this.ball.position.x - 150, 150, this.ball.position.y - 150);
+  this.debugCamera.position.set(this.ball.position.x - 15, 15, this.ball.position.y - 15);
   this.debugCamera.lookAt(this.ball.position);
 
   //this.skyBoxCamera.rotation.copy(this.camera.rotation);
@@ -91,6 +110,8 @@ var createBall = function() {
   return ballObject;
 };
 
+var fooManChu = 0;
+
 var createNodeObject = function(nodeMaterial) {
   var x = 16.0;
   var y = 1.0;
@@ -98,6 +119,8 @@ var createNodeObject = function(nodeMaterial) {
 
   var nodeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
+  nodeMesh.name = fooManChu++;
+  console.log(nodeMesh.name);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
   return nodeObject;
@@ -135,25 +158,9 @@ var attachEdgeToNode = (function() {
     edgeDirection.push(directionVector);
   }
 
-  /*
-  console.log(positionVector, directionVector);
-
-  edgePosition[0] = new THREE.Vector3(0, 0, 16);
-  edgeDirection[0] = new THREE.Vector3(16, 0, 16);
-
-  edgePosition[1] = new THREE.Vector3(16, 0, 0);
-  edgeDirection[1] = new THREE.Vector3(16, 0, -16);
-
-  edgePosition[2] = new THREE.Vector3(0, 0, -16);
-  edgeDirection[2] = new THREE.Vector3(-16, 0, -16);
-
-  edgePosition[3] = new THREE.Vector3(-16, 0, 0);
-  edgeDirection[3] = new THREE.Vector3(-16, 0, 16);
-  */
-
   return function(edge, node, position) {
     edge.position.addVectors(edgePosition[position], node.position);
-    var la = new THREE.Vector3();
+    var la = new THREE.Vector3(0, 0, 0);
     la.addVectors(node.position, edgeDirection[position]);
     edge.lookAt(la);
   }
@@ -206,7 +213,6 @@ var main = function(body) {
 
   var renderer = new THREE.WebGLRenderer({});
 
-  //renderer.setFaceCulling("back");
   renderer.setSize(wsa.x, wsa.y);
   renderer.autoClear = false;
   renderer.setClearColorHex(0x000000, 1.0);
@@ -252,6 +258,9 @@ var main = function(body) {
     dirs.push(randomDir);
   }
 
+  scene.updateMatrix();
+  scene.updateMatrixWorld();
+
   var thingy = {
     fps: 35.0,
     then: Date.now(),
@@ -282,6 +291,7 @@ var main = function(body) {
     forward_angle: 0,
     edges: edges,
     nodes: nodes,
+    dirs: dirs,
     resetTimeout: 0.6325,
     resetTimer: 0.0,
     currentNode: max - 1,
