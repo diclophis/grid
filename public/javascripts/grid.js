@@ -3,36 +3,18 @@ var tick = function() {
   var dt = this.clock.getDelta();
   this.st += dt;
 
-//console.log(dt * 1000);
-
-//console.log(dt);
   this.forward_angle += dt * 0.0;
 
-  //var skid = 0; //(this.leftVector.x * 1.0);
-  //var drift = this.foward.clone();
-  //drift.x = Math.cos(this.forward_angle + skid);
-  //drift.z = Math.sin(this.forward_angle + skid);
-  //this.foward.x = Math.cos(this.forward_angle);
-  //this.foward.z = Math.sin(this.forward_angle);
-
-
-    //var farForward = this.foward.clone().multiplyScalar(100.0); //how far in front
-    //var farBack = this.foward.clone().negate().multiplyScalar(150.0); //how far in back
-
-    //var reallyFarOut = this.ball.position.clone().add(farForward);
-    //var reallyFarBack = this.ball.position.clone().add(farBack);
-
-    //var whereCarIsPointing = this.ball.position.clone().add(this.foward);
-
-    //this.camera.lookAt(reallyFarOut);
-    ////this.camera.lookAt(this.nodes[this.nodes.length / 2].position);
-    ////this.camera.position = (this.nodes[3].position);
-    //this.camera.position.set(0 + reallyFarBack.x, 100.0, 0 + reallyFarBack.z);
-
+  this.ballRayCaster.set(this.ball.position, new THREE.Vector3(0, -1, 0));
+  var nextNodeToIntersectWith = ((this.oldestNode + 2) % this.nodes.length);
+  var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith].children[0], false);
 
   this.resetTimer += dt;
 
-  if (this.resetTimer > this.resetTimeout) {
+  //if (false && this.resetTimer > this.resetTimeout) {
+  if (false && intersectsWithNode.length > 0) {
+    console.log("wtf");
+
     this.resetTimer = 0;
 
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
@@ -47,27 +29,11 @@ var tick = function() {
     if (this.currentNode >= this.nodes.length) {
       this.currentNode = 0;
     }
-
-
-/*
-    this.currentNode++;
-    var lastNode = this.currentNode;
-    if (this.currentNode >= (this.nodes.length - 1)) {
-      this.currentNode = 0;
-    }
-
-    //attachEdgeToNode(this.edges[this.currentNode], this.nodes[this.currentNode], 1);
-    //placeNodeAtEdge(this.nodes[this.currentNode+1], this.edges[this.currentNode]);
- console.log(lastNode, this.currentNode); 
-    placeNodeAtEdge(this.nodes[this.currentNode], this.edges[lastNode]);
-    attachEdgeToNode(this.edges[lastNode], this.nodes[lastNode], 1);
-*/
-
   }
 
   this.ball.rotation.y = (this.forward_angle);
 
-  this.ball.translateX(50.0 * dt);
+  this.ball.translateX(0.0 * dt);
 
   var d = 50.0;
 
@@ -80,51 +46,18 @@ var tick = function() {
   this.ball.translateX(d);
 
   this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
-  this.camera.lookAt(front_of_ball); //new THREE.Vector3(0, 0, 0));
+  this.camera.lookAt(front_of_ball);
 
   this.debugCamera.position.set(this.ball.position.x - 150, 150, this.ball.position.y - 150);
   this.debugCamera.lookAt(this.ball.position);
 
-
-  //var d = parseInt(this.st * 0.5) % 4;
-  //var dd = (parseInt(this.st * 0.5) + 1) % 4
-  //console.log(parseInt(this.st * 0.1) % 2);
-
-  /*
-  this.resetTimer += dt;
-
-  if (this.resetTimer > this.resetTimeout) {
-    this.resetTimer = 0.0;
-    //(parseInt(this.st * 0.5) % 4) == 0) {
-    //attachEdgeToNode(edges[0], nodes[0], 3);
-    //attachEdgeToNode(edges[0], nodes[0], 3);
-    var d = 0;
-    var f = 0;
-    var g = 0;
-
-    for (var i=0; i<20 - 1; i++) {
-      d = parseInt(Math.random() * 4.0);
-
-      //console.log("connecting edge", i, " to node ", i);
-      attachEdgeToNode(this.edges[i], this.nodes[i], d % 4);
-      //console.log("connecting node", i+1, " to edge ", i);
-      placeNodeAtEdge(this.nodes[i+1], this.edges[i]);
-      this.nodes[i+1].position.y = i * 2;
-      g++;
-    }
-  }
-  */
-
-  //this.camera.updateProjectionMatrix();
-  this.skyBoxCamera.rotation.copy(this.camera.rotation);
+  //this.skyBoxCamera.rotation.copy(this.camera.rotation);
+  this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-
-  this.renderer.setViewport(0, 0, this.wsa.x, this.wsa.y);
+  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
   //this.renderer.clear(false, true, false);
   this.renderer.clear(true, true, true);
-  //this.camera.updateProjectionMatrix();
-  //this.skyBoxCamera.updateProjectionMatrix();
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
@@ -133,16 +66,15 @@ var tick = function() {
   var view_bottom = 0.5;
   var view_width = 0.5;
   var view_height = 0.5;
-  var left   = Math.floor(this.wsa.x  * view_left);
-  var bottom = Math.floor(this.wsa.y * view_bottom);
-  var width  = Math.floor(this.wsa.x  * view_width);
-  var height = Math.floor(this.wsa.y * view_height);
+  var left   = Math.floor(this.wsa.ax  * view_left);
+  var bottom = Math.floor(this.wsa.ay * view_bottom);
+  var width  = Math.floor(this.wsa.ax  * view_width);
+  var height = Math.floor(this.wsa.ay * view_height);
   this.renderer.setViewport(left, bottom, width, height);
   //this.renderer.setScissor(left, bottom, width, height);
   //this.renderer.enableScissorTest(true);
   //renderer.setClearColor( view.background, view.background.a );
   this.debugCamera.aspect = width / height;
-  //this.debugCamera.updateProjectionMatrix();
   this.renderer.render(this.scene, this.debugCamera);
 
   requestAnimationFrame(tick.bind(this));
@@ -155,7 +87,7 @@ var createBall = function() {
   var trackPointGeo = new THREE.SphereGeometry(radius, 3, 3);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
-  ballObject.position.set(0, 0, 0);
+  ballObject.position.set(0, 5, 0);
   return ballObject;
 };
 
@@ -233,9 +165,8 @@ var main = function(body) {
     }
   }, false);
 
-
-  var camera = createCamera(wsa, 200, 45);
-  var debugCamera = createCamera(wsa, 2000, 30);
+  var camera = createCamera(wsa, 300, 30);
+  var debugCamera = createCamera(wsa, 2000, 60);
 
   var scene = createScene();
 
@@ -267,8 +198,9 @@ var main = function(body) {
 
   var nodes = new Array();
   var edges = new Array();
+  var dirs = new Array();
 
-  var max = 4;
+  var max = 3;
 
   for (var i=0; i<max; i++) {
     var baseNodeMaterial = createMeshBasicWireframeMaterial();
@@ -284,10 +216,21 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
+  var dirNotInDir = function(notDir) {
+    var dir = parseInt(Math.random() * 4);
+    if (dir === (((notDir + 8) - 2) % 4)) {
+      dir = (dir + 1) % 4;
+    }
+    return dir;
+  };
+
   attachEdgeToNode(edges[0], nodes[0], 1);
+  dirs.push(1);
   for (var i=0; i<=(max - 2); i++) {
     placeNodeAtEdge(nodes[i + 1], edges[i]);
-    attachEdgeToNode(edges[i + 1], nodes[i + 1], 1);
+    var randomDir = dirNotInDir(dirs[i]);
+    attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
+    dirs.push(randomDir);
   }
 
   var thingy = {
@@ -316,10 +259,11 @@ var main = function(body) {
     clock: new THREE.Clock(true),
     //
     ball: ball,
+    ballRayCaster: new THREE.Raycaster(ball.position, new THREE.Vector3(0, -1, 0)),
     forward_angle: 0,
     edges: edges,
     nodes: nodes,
-    resetTimeout: 0.6375,
+    resetTimeout: 0.6325,
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
