@@ -51,7 +51,7 @@ var tick = function() {
 
   this.ball.rotation.y = currentRot;
 
-  this.ball.translateX(10.0 * dt);
+  this.ball.translateX(100.0 * dt);
 
   var d = 50.0;
 
@@ -66,7 +66,7 @@ var tick = function() {
   this.camera.position.set((back_of_ball.x), (Math.sin(this.st) * 0.0) + 10.0, (back_of_ball.z));
   this.camera.lookAt(front_of_ball);
 
-  this.debugCamera.position.set(this.ball.position.x - 15, 15, this.ball.position.z - 15);
+  this.debugCamera.position.set(this.ball.position.x - 25, 25, this.ball.position.z - 25);
   this.debugCamera.lookAt(this.ball.position);
 
   //this.skyBoxCamera.rotation.copy(this.camera.rotation);
@@ -109,8 +109,6 @@ var createBall = function() {
   return ballObject;
 };
 
-var fooManChu = 0;
-
 var createNodeObject = function(nodeMaterial) {
   var x = 16.0;
   var y = 1.0;
@@ -118,8 +116,6 @@ var createNodeObject = function(nodeMaterial) {
 
   var nodeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
-  nodeMesh.name = fooManChu++;
-  console.log(nodeMesh.name);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
   return nodeObject;
