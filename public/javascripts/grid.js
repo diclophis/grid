@@ -1,6 +1,11 @@
 var tick = function() {
-
+  requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
+
+  if (this.paused) {
+    return;
+  }
+
   this.st += dt;
 
   TWEEN.update();
@@ -26,23 +31,37 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
 
-    var originalCameraLine = updateCameraLine(this.ball).clone();
-
+    //var originalCameraLine = updateCameraLine(this.ball).clone();
+    var oldRot = { r: this.ball.rotation.y };
     var currentDir = this.dirs[this.oldestNode];
-    var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
+    var currentRot = THREE.Math.degToRad(((currentDir * 90.00) - 90.00));
+    var newRot = { r: currentRot };
 
-    this.ball.rotation.y = currentRot;
+    if (newRot.r != oldRot.r) {
+      console.log(oldRot, newRot, THREE.Math.radToDeg(oldRot.r) - THREE.Math.radToDeg(newRot.r));
+      var b = this.ball;
+      var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 500);
+      ballRotTween.onUpdate(function() {
+        b.rotation.y = this.r;
+      });
+      ballRotTween.start();
+    }
 
-    this.ball.updateMatrix();
-    this.ball.updateMatrixWorld();
+    //this.ball.rotation.y = currentRot;
+    //this.camera.rotation.y = currentRot + THREE.Math.degToRad(90 - 180);
 
-    var cameraLine = updateCameraLine(this.ball);
+    //this.ball.updateMatrix();
+    //this.ball.updateMatrixWorld();
 
+    //var cameraLine = updateCameraLine(this.ball);
+
+    /*
     var c = this.camera;
 
-    var tween = new TWEEN.Tween(originalCameraLine.start).to(cameraLine.start, 500);
+    var tween = new TWEEN.Tween(originalCameraLine.start.toArray()).to(cameraLine.start.toArray(), 500);
     tween.onUpdate(function(){
-      c.position.copy(this);
+      console.log(this);
+      c.position.set(this[0], this[1], this[2]);
     });
     tween.start();
 
@@ -51,14 +70,15 @@ var tick = function() {
       c.lookAt(this);
     });
     tween2.start();
+    */
 
     //this.camera.position.copy(cameraLine.start);
     //this.camera.lookAt(cameraLine.end);
   }
 
-  this.ball.translateX(50.0 * dt);
-
+  this.ball.translateX(10.0 * dt);
   //this.camera.translateZ(-10.0 * dt);
+  //this.camera.position.y = 20.0;
 
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
@@ -85,7 +105,6 @@ var tick = function() {
   this.debugCamera.aspect = width / height;
   this.renderer.render(this.scene, this.debugCamera);
 
-  requestAnimationFrame(tick.bind(this));
 };
 
 var createBall = function() {
@@ -199,17 +218,6 @@ var main = function(body) {
   var container = createContainer();
   body.appendChild(container);
 
-  var fullscreenButton = document.getElementById("fullscreen-button");
-
-  fullscreenButton.addEventListener('click', function(ev) {
-    if (screenfull.enabled) {
-      screenfull.onchange = function() {
-        //console.log('Am I fullscreen? ' + screenfull.isFullscreen ? 'Yes' : 'No');
-      };
-      screenfull.toggle(container);
-    }
-  }, false);
-
   var camera = createCamera(wsa, 300, 30);
   var debugCamera = createCamera(wsa, 2000, 60);
 
@@ -238,6 +246,7 @@ var main = function(body) {
   container.appendChild(renderer.domElement);
 
   var ball = createBall();
+  ball.add(camera);
   scene.add(ball);
 
   var nodes = new Array();
@@ -300,6 +309,7 @@ var main = function(body) {
     scene: scene,
     dirty: false,
     clock: new THREE.Clock(true),
+    paused: false,
     //
     ball: ball,
     ballRayCaster: new THREE.Raycaster(ball.position, new THREE.Vector3(0, -1, 0)),
@@ -313,6 +323,23 @@ var main = function(body) {
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
   };
+
+  var fullscreenButton = document.getElementById("fullscreen-button");
+
+  fullscreenButton.addEventListener('click', function(ev) {
+    if (screenfull.enabled) {
+      screenfull.onchange = function() {
+        //console.log('Am I fullscreen? ' + screenfull.isFullscreen ? 'Yes' : 'No');
+      };
+      screenfull.toggle(container);
+    }
+  }, false);
+
+  var pauseButton = document.getElementById("pause-button");
+
+  pauseButton.addEventListener('click', function(ev) {
+    this.paused = !this.paused;
+  }.bind(thingy), false);
 
   // event listeners
   renderer.domElement.addEventListener('pointerdown', onPointerDown.bind(thingy), false);
