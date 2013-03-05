@@ -9,6 +9,8 @@ var tick = function() {
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
 
+  //var updateCamera = false;
+
   if (intersectsWithNode.length > 0) {
     var newDir = dirNotInDir(this.dirs[this.currentNode]);
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
@@ -28,21 +30,27 @@ var tick = function() {
 
     var cameraRotationStart = { r : 0 };
     var cameraRotationStop = { r: 90 };
-    var tween = new TWEEN.Tween(cameraRotationStart).to(cameraRotationStop, 500);
-    tween.onUpdate(function(){
-      mesh.position.x = position.x;
-    });
+    //var tween = new TWEEN.Tween(cameraRotationStart).to(cameraRotationStop, 500);
+    //tween.onUpdate(function(){
+    //  mesh.position.x = position.x;
+    //});
+
+    //updateCamera = true;
   }
 
   var currentDir = this.dirs[this.oldestNode];
   var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
 
   this.ball.rotation.y = currentRot;
-  this.ball.translateX(1.0 * dt);
+  this.ball.translateX(10.0 * dt);
 
   this.camera.rotation.y = this.ball.rotation.y + THREE.Math.degToRad(90 + 180);
-  this.camera.translateZ(-1.0 * dt);
-  //this.cameraLine.applyMatrix4(this.ball.matrix);
+  this.camera.translateZ(-10.0 * dt);
+
+  //if (updateCamera) {
+  //  updateCameraLine(this.ball, this.camera);
+  //}
+
 
   /*
   var d = 50.0;
@@ -173,6 +181,32 @@ var dirNotInDir = function(notDir) {
   }
   return dir;
 };
+
+var updateCameraLine = (function() {
+
+  var cameraLineStart = new THREE.Vector3(0, 0, 0);
+  var cameraLineEnd = new THREE.Vector3(0, 0, 0);
+  var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
+  var d = 50.0;
+
+  return function(ball, camera) {
+    ball.translateX(d);
+    cameraLineEnd.copy(ball.position);
+    ball.translateX(-d);
+
+    ball.translateX(-d);
+    cameraLineStart.copy(ball.position);
+    ball.translateX(d);
+
+    cameraLineStart.y = 10.0;
+
+    cameraLine.start.copy(cameraLineStart);
+    cameraLine.end.copy(cameraLineEnd);
+
+    camera.position.copy(cameraLine.start);
+    camera.lookAt(cameraLine.end);
+  }
+})();
   
 var main = function(body) {
 
@@ -252,29 +286,9 @@ var main = function(body) {
     dirs.push(randomDir);
   }
 
-  var d = 50.0;
 
-  var cameraLineStart = new THREE.Vector3(0, 0, 0);
-  var cameraLineEnd = new THREE.Vector3(0, 0, 0);
 
-  //var currentDir = dirs[0];
-  //var currentRot = THREE.Math.degToRad((currentDir * 90.00));
-  //ball.rotation.y = currentRot;
-
-  ball.translateX(d);
-  cameraLineEnd.copy(ball.position);
-  ball.translateX(-d);
-
-  ball.translateX(-d);
-  cameraLineStart.copy(ball.position);
-  ball.translateX(d);
-
-  cameraLineStart.y += 10.0;
-
-  var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
-
-  camera.position.copy(cameraLine.start);
-  camera.lookAt(cameraLine.end);
+  updateCameraLine(ball, camera);
 
   scene.updateMatrix();
   scene.updateMatrixWorld();
@@ -317,7 +331,7 @@ var main = function(body) {
     downDirectionVector: new THREE.Vector3(0, -1, 0),
     //frontOfBall: new THREE.Vector3(0, 0, 0),
     //backOfBall: new THREE.Vector3(0, 0, 0),
-    cameraLine: cameraLine,
+    //cameraLine: cameraLine,
 
   };
 
