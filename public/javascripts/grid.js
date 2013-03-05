@@ -179,11 +179,11 @@ var updateCameraLine = (function() {
     cameraLineEnd.copy(ball.position);
     ball.translateX(-d);
 
-    ball.translateX(-d);
+    ball.translateX(-d * 2.0);
     cameraLineStart.copy(ball.position);
-    ball.translateX(d);
+    ball.translateX(d * 2.0);
 
-    cameraLineStart.y = 10.0;
+    cameraLineStart.y = 20.0;
 
     cameraLine.start.copy(cameraLineStart);
     cameraLine.end.copy(cameraLineEnd);
