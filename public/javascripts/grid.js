@@ -36,15 +36,24 @@ var tick = function() {
     //});
 
     //updateCamera = true;
+
+    var currentDir = this.dirs[this.oldestNode];
+    var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
+
+    this.ball.rotation.y = currentRot;
+
+    this.ball.updateMatrix();
+    this.ball.updateMatrixWorld();
+
+    var cameraLine = updateCameraLine(this.ball);
+    this.camera.position.copy(cameraLine.start);
+    this.camera.lookAt(cameraLine.end);
+  
+    //this.camera.rotation.y = this.ball.rotation.y + THREE.Math.degToRad(90 - 180);
   }
 
-  var currentDir = this.dirs[this.oldestNode];
-  var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
-
-  this.ball.rotation.y = currentRot;
   this.ball.translateX(10.0 * dt);
 
-  this.camera.rotation.y = this.ball.rotation.y + THREE.Math.degToRad(90 + 180);
   this.camera.translateZ(-10.0 * dt);
 
   //if (updateCamera) {
@@ -52,29 +61,9 @@ var tick = function() {
   //}
 
 
-  /*
-  var d = 50.0;
-
-  this.ball.translateX(d);
-  this.frontOfBall.copy(this.ball.position);
-  this.ball.translateX(-d);
-
-  this.ball.translateX(-d);
-  this.backOfBall.copy(this.ball.position);
-  this.ball.translateX(d);
-
-  this.camera.position.set((this.backOfBall.x), (Math.sin(this.st) * 0.0) + 10.0, (this.backOfBall.z));
-  this.camera.lookAt(this.frontOfBall);
-
-  */
-
-  //this.camera.position.copy(this.cameraLine.start);
-  //this.camera.lookAt(this.cameraLine.end);
-
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
 
-  //this.skyBoxCamera.rotation.copy(this.camera.rotation);
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
@@ -94,9 +83,6 @@ var tick = function() {
   var width  = Math.floor(this.wsa.ax  * view_width);
   var height = Math.floor(this.wsa.ay * view_height);
   this.renderer.setViewport(left, bottom, width, height);
-  //this.renderer.setScissor(left, bottom, width, height);
-  //this.renderer.enableScissorTest(true);
-  //renderer.setClearColor( view.background, view.background.a );
   this.debugCamera.aspect = width / height;
   this.renderer.render(this.scene, this.debugCamera);
 
@@ -189,7 +175,7 @@ var updateCameraLine = (function() {
   var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
   var d = 50.0;
 
-  return function(ball, camera) {
+  return function(ball) {
     ball.translateX(d);
     cameraLineEnd.copy(ball.position);
     ball.translateX(-d);
@@ -203,8 +189,7 @@ var updateCameraLine = (function() {
     cameraLine.start.copy(cameraLineStart);
     cameraLine.end.copy(cameraLineEnd);
 
-    camera.position.copy(cameraLine.start);
-    camera.lookAt(cameraLine.end);
+    return cameraLine;
   }
 })();
   
@@ -286,9 +271,9 @@ var main = function(body) {
     dirs.push(randomDir);
   }
 
-
-
-  updateCameraLine(ball, camera);
+  var cameraLine = updateCameraLine(ball);
+  camera.position.copy(cameraLine.start);
+  camera.lookAt(cameraLine.end);
 
   scene.updateMatrix();
   scene.updateMatrixWorld();
