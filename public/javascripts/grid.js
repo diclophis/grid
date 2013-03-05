@@ -38,9 +38,13 @@ var tick = function() {
   var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
 
   this.ball.rotation.y = currentRot;
+  this.ball.translateX(1.0 * dt);
 
-  this.ball.translateX(25.0 * dt);
+  this.camera.rotation.y = this.ball.rotation.y + THREE.Math.degToRad(90 + 180);
+  this.camera.translateZ(-1.0 * dt);
+  //this.cameraLine.applyMatrix4(this.ball.matrix);
 
+  /*
   var d = 50.0;
 
   this.ball.translateX(d);
@@ -54,7 +58,12 @@ var tick = function() {
   this.camera.position.set((this.backOfBall.x), (Math.sin(this.st) * 0.0) + 10.0, (this.backOfBall.z));
   this.camera.lookAt(this.frontOfBall);
 
-  this.debugCamera.position.set(this.ball.position.x - 25, 25, this.ball.position.z - 25);
+  */
+
+  //this.camera.position.copy(this.cameraLine.start);
+  //this.camera.lookAt(this.cameraLine.end);
+
+  this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
 
   //this.skyBoxCamera.rotation.copy(this.camera.rotation);
@@ -243,6 +252,30 @@ var main = function(body) {
     dirs.push(randomDir);
   }
 
+  var d = 50.0;
+
+  var cameraLineStart = new THREE.Vector3(0, 0, 0);
+  var cameraLineEnd = new THREE.Vector3(0, 0, 0);
+
+  //var currentDir = dirs[0];
+  //var currentRot = THREE.Math.degToRad((currentDir * 90.00));
+  //ball.rotation.y = currentRot;
+
+  ball.translateX(d);
+  cameraLineEnd.copy(ball.position);
+  ball.translateX(-d);
+
+  ball.translateX(-d);
+  cameraLineStart.copy(ball.position);
+  ball.translateX(d);
+
+  cameraLineStart.y += 10.0;
+
+  var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
+
+  camera.position.copy(cameraLine.start);
+  camera.lookAt(cameraLine.end);
+
   scene.updateMatrix();
   scene.updateMatrixWorld();
 
@@ -282,8 +315,9 @@ var main = function(body) {
     currentNode: max - 1,
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
-    frontOfBall: new THREE.Vector3(0, 0, 0),
-    backOfBall: new THREE.Vector3(0, 0, 0),
+    //frontOfBall: new THREE.Vector3(0, 0, 0),
+    //backOfBall: new THREE.Vector3(0, 0, 0),
+    cameraLine: cameraLine,
 
   };
 
