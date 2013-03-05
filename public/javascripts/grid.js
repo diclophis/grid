@@ -3,6 +3,8 @@ var tick = function() {
   var dt = this.clock.getDelta();
   this.st += dt;
 
+  TWEEN.update();
+
   this.ballRayCaster.set(this.ball.position, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
@@ -23,6 +25,13 @@ var tick = function() {
     }
 
     this.dirs[this.currentNode] = newDir;
+
+    var cameraRotationStart = { r : 0 };
+    var cameraRotationStop = { r: 90 };
+    var tween = new TWEEN.Tween(cameraRotationStart).to(cameraRotationStop, 500);
+    tween.onUpdate(function(){
+      mesh.position.x = position.x;
+    });
   }
 
   var currentDir = this.dirs[this.oldestNode];
@@ -30,7 +39,7 @@ var tick = function() {
 
   this.ball.rotation.y = currentRot;
 
-  this.ball.translateX(100.0 * dt);
+  this.ball.translateX(25.0 * dt);
 
   var d = 50.0;
 
