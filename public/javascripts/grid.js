@@ -31,54 +31,38 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
 
-    //var originalCameraLine = updateCameraLine(this.ball).clone();
-    var oldRot = { r: this.ball.rotation.y };
+    var oldRad = this.ball.rotation.y;
+    var oldRot = { r: 0 };
     var currentDir = this.dirs[this.oldestNode];
     var currentRot = THREE.Math.degToRad(((currentDir * 90.00) - 90.00));
-    var newRot = { r: currentRot };
 
-    if (newRot.r != oldRot.r) {
-      console.log(oldRot, newRot, THREE.Math.radToDeg(oldRot.r) - THREE.Math.radToDeg(newRot.r));
-      var b = this.ball;
-      var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 500);
-      ballRotTween.onUpdate(function() {
-        b.rotation.y = this.r;
-      });
-      ballRotTween.start();
+    var deltaDeg = Math.round(THREE.Math.radToDeg(oldRad) - THREE.Math.radToDeg(currentRot));
+    while(deltaDeg >= 360 || deltaDeg <= -360) {
+      if (deltaDeg >= 360) {
+        deltaDeg -= 360;
+      }
+      if (deltaDeg <= -360) {
+        deltaDeg += 360;
+      }
     }
 
-    //this.ball.rotation.y = currentRot;
-    //this.camera.rotation.y = currentRot + THREE.Math.degToRad(90 - 180);
+    if (deltaDeg == -270.0) {
+      deltaDeg = 90.0;
+    }
+    if (deltaDeg == 270.0) {
+      deltaDeg = -90.0;
+    }
 
-    //this.ball.updateMatrix();
-    //this.ball.updateMatrixWorld();
-
-    //var cameraLine = updateCameraLine(this.ball);
-
-    /*
-    var c = this.camera;
-
-    var tween = new TWEEN.Tween(originalCameraLine.start.toArray()).to(cameraLine.start.toArray(), 500);
-    tween.onUpdate(function(){
-      console.log(this);
-      c.position.set(this[0], this[1], this[2]);
+    var newRot = { r: deltaDeg };
+    var b = this.ball;
+    var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 250);
+    ballRotTween.onUpdate(function() {
+      b.rotation.y = oldRad - THREE.Math.degToRad(this.r);
     });
-    tween.start();
-
-    var tween2 = new TWEEN.Tween(originalCameraLine.end).to(cameraLine.end, 500);
-    tween2.onUpdate(function(){
-      c.lookAt(this);
-    });
-    tween2.start();
-    */
-
-    //this.camera.position.copy(cameraLine.start);
-    //this.camera.lookAt(cameraLine.end);
+    ballRotTween.start();
   }
 
-  this.ball.translateX(10.0 * dt);
-  //this.camera.translateZ(-10.0 * dt);
-  //this.camera.position.y = 20.0;
+  this.ball.translateX(50.0 * dt);
 
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
