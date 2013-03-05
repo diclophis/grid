@@ -9,8 +9,6 @@ var tick = function() {
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
 
-  //var updateCamera = false;
-
   if (intersectsWithNode.length > 0) {
     var newDir = dirNotInDir(this.dirs[this.currentNode]);
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
@@ -28,14 +26,7 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
 
-    var cameraRotationStart = { r : 0 };
-    var cameraRotationStop = { r: 90 };
-    //var tween = new TWEEN.Tween(cameraRotationStart).to(cameraRotationStop, 500);
-    //tween.onUpdate(function(){
-    //  mesh.position.x = position.x;
-    //});
-
-    //updateCamera = true;
+    var originalCameraLine = updateCameraLine(this.ball).clone();
 
     var currentDir = this.dirs[this.oldestNode];
     var currentRot = THREE.Math.degToRad((currentDir * 90.00) - 90.00);
@@ -46,20 +37,28 @@ var tick = function() {
     this.ball.updateMatrixWorld();
 
     var cameraLine = updateCameraLine(this.ball);
-    this.camera.position.copy(cameraLine.start);
-    this.camera.lookAt(cameraLine.end);
-  
-    //this.camera.rotation.y = this.ball.rotation.y + THREE.Math.degToRad(90 - 180);
+
+    var c = this.camera;
+
+    var tween = new TWEEN.Tween(originalCameraLine.start).to(cameraLine.start, 500);
+    tween.onUpdate(function(){
+      c.position.copy(this);
+    });
+    tween.start();
+
+    var tween2 = new TWEEN.Tween(originalCameraLine.end).to(cameraLine.end, 500);
+    tween2.onUpdate(function(){
+      c.lookAt(this);
+    });
+    tween2.start();
+
+    //this.camera.position.copy(cameraLine.start);
+    //this.camera.lookAt(cameraLine.end);
   }
 
-  this.ball.translateX(10.0 * dt);
+  this.ball.translateX(50.0 * dt);
 
-  this.camera.translateZ(-10.0 * dt);
-
-  //if (updateCamera) {
-  //  updateCameraLine(this.ball, this.camera);
-  //}
-
+  //this.camera.translateZ(-10.0 * dt);
 
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
@@ -261,7 +260,6 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
-
   attachEdgeToNode(edges[0], nodes[0], 1);
   dirs.push(1);
   for (var i=0; i<=(max - 2); i++) {
@@ -314,10 +312,6 @@ var main = function(body) {
     currentNode: max - 1,
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
-    //frontOfBall: new THREE.Vector3(0, 0, 0),
-    //backOfBall: new THREE.Vector3(0, 0, 0),
-    //cameraLine: cameraLine,
-
   };
 
   // event listeners
