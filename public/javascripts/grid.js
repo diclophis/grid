@@ -33,12 +33,25 @@ var tick = function() {
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
     this.paused = true;
     setTimeout(function() {
-      //window.location.reload();
-    }, 500);
+    //  window.location.reload();
+     //o var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
+      this.ball.position.copy(this.nodes[thisNodeToIntersectWith].position);
+      this.ball.position.y = 10;
+      this.paused = false; 
+      var currentDir = this.dirs[this.oldestNode];
+      var currentRot = THREE.Math.degToRad(((currentDir * 90.00) ));
+      this.ball.rotation.y = currentRot + (Math.PI / -2.0);
+
+    }.bind(this), 333);
   }
 
   if (intersectsWithNode.length > 0) {
-    var newDir = dirNotInDir(this.dirs[this.currentNode]);
+    var newDir = null;
+    if (Math.random() < 0.7) {
+      newDir = dirNotInDir(this.dirs[this.currentNode]);
+    } else {
+      newDir = this.dirs[this.currentNode];
+    }
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
 
@@ -254,6 +267,10 @@ var updateCameraLine = (function() {
 })();
 
 var onKeyDown = function(ev) {
+  if (!this.soundStarted) {
+    play_mod(random_mod_href());
+    this.soundStarted = true;
+  }
   switch(ev.keyCode) {
     case 37:
       this.turnDir = -1;
@@ -271,7 +288,7 @@ var main = function(body) {
   var container = createContainer();
   body.appendChild(container);
 
-  var camera = createCamera(wsa, 300, 30);
+  var camera = createCamera(wsa, 300, 40);
   var debugCamera = createCamera(wsa, 2000, 60);
 
   var scene = createScene();
@@ -314,8 +331,7 @@ var main = function(body) {
   var edges = new Array();
   var dirs = new Array();
 
-  var max = 3;
-
+  var max = 6;
 
   for (var i=0; i<max; i++) {
     var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
@@ -394,6 +410,7 @@ var main = function(body) {
     renderDebugCamera: false,
     resizeTimeout: null,
     turnDir: 0.0,
+    startedMusic: false,
   };
 
   var fullscreenButton = document.getElementById("fullscreen-button");
