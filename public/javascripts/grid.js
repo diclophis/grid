@@ -1,7 +1,6 @@
 var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
-  //console.log(dt);
 
   if (this.paused || dt > 0.04) {
     return;
@@ -11,11 +10,11 @@ var tick = function() {
 
   TWEEN.update();
 
-  if (this.speed < 75) {
-    this.speed += 5.0 * dt;
+  if (this.speed < 100) {
+    this.speed += 10.0 * dt;
   }
 
-  var turn = (1 / (this.speed / 10.0)) * 1100; //1 / (this.speed / speed_to_turn_ratio);
+  var turn = (1 / (this.speed / 10.0)) * 1100;
 
   var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
   this.ballRayCaster.set(foo, this.downDirectionVector);
@@ -90,9 +89,7 @@ var tick = function() {
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-  //this.renderer.setSize(this.wsa.x, this.wsa.y);
   this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
-  //this.renderer.clear(false, true, false);
   this.renderer.clear(true, true, true);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
@@ -279,8 +276,6 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
-  //attachEdgeToNode(edges[0], nodes[0], 1);
-  //dirs.push(1);
   for (var i=0; i<(max); i++) {
     var randomDir = null;
     if (i === 0) {
@@ -290,12 +285,9 @@ var main = function(body) {
       randomDir = dirNotInDir(dirs[i - 1]);
     }
     if (i > 0) {
-      console.log("putting node", i, "next to edge", i - 1);
       placeNodeAtEdge(nodes[i], edges[i-1]);
     }
-    console.log("putting edge", i, "next to node", i);
     attachEdgeToNode(edges[i], nodes[i], randomDir);
-    //attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
     dirs.push(randomDir);
   }
 
@@ -345,9 +337,8 @@ var main = function(body) {
     downDirectionVector: new THREE.Vector3(0, -1, 0),
     speed: 10,
     renderDebugCamera: false,
+    resizeTimeout: null,
   };
-
-  //thingy.ballRayCaster.precision = 1.0;
 
   var fullscreenButton = document.getElementById("fullscreen-button");
 
