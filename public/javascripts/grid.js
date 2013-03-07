@@ -72,6 +72,9 @@ var tick = function() {
       deltaDeg = -90.0;
     }
 
+    deltaDeg = 90.0 * this.turnDir;
+
+    this.turnDir = 0.0;
     var newRot = { r: deltaDeg };
     var b = this.ball;
     var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, turn);
@@ -217,7 +220,18 @@ var updateCameraLine = (function() {
     return cameraLine;
   }
 })();
-  
+
+var onKeyDown = function(ev) {
+  switch(ev.keyCode) {
+    case 37:
+      this.turnDir = -1;
+      break;
+    case 39:
+      this.turnDir = 1;
+      break
+  };
+};
+
 var main = function(body) {
 
   var wsa = windowSizeAndAspect();
@@ -338,6 +352,7 @@ var main = function(body) {
     speed: 10,
     renderDebugCamera: false,
     resizeTimeout: null,
+    turnDir: 0.0,
   };
 
   var fullscreenButton = document.getElementById("fullscreen-button");
@@ -372,6 +387,7 @@ var main = function(body) {
   renderer.domElement.addEventListener('pointerdown', onPointerDown.bind(thingy), false);
   renderer.domElement.addEventListener('pointermove', onPointerMove.bind(thingy), false);
   renderer.domElement.addEventListener('pointerup', onPointerUp.bind(thingy), false);
+  window.addEventListener('keydown', onKeyDown.bind(thingy), false);
   window.addEventListener('resize', onWindowResize.bind(thingy), false);
   window.addEventListener('unload', onWindowUnload.bind(thingy), false);
   tick.apply(thingy);
