@@ -327,10 +327,17 @@ var main = function(body) {
     this.paused = !this.paused;
   }.bind(thingy), false);
 
+  var onWindowUnload = function(ev) {
+    container.removeChild(renderer.domElement);
+    delete renderer.domElement;
+    renderer.domElement = null;
+  };
+
   // event listeners
   renderer.domElement.addEventListener('pointerdown', onPointerDown.bind(thingy), false);
   renderer.domElement.addEventListener('pointermove', onPointerMove.bind(thingy), false);
   renderer.domElement.addEventListener('pointerup', onPointerUp.bind(thingy), false);
   window.addEventListener('resize', onWindowResize.bind(thingy), false);
+  window.addEventListener('unload', onWindowUnload.bind(thingy), false);
   tick.apply(thingy);
 };
