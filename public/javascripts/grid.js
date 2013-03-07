@@ -10,11 +10,11 @@ var tick = function() {
 
   TWEEN.update();
 
-  if (this.speed < 100) {
+  if (this.speed < 75) {
     this.speed += 10.0 * dt;
   }
 
-  var turn = (1 / (this.speed / 10.0)) * 1100;
+  var turn = (1 / (this.speed / 10.0)) * 500; //1100;
 
   var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
   this.ballRayCaster.set(foo, this.downDirectionVector);
@@ -34,9 +34,9 @@ var tick = function() {
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
 
-    if (this.edges[this.oldestNode].scale.z > 0.5) {
-      this.edges[this.oldestNode].scale.z = ((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.075);
-    }
+    //if (this.edges[this.oldestNode].scale.z > 0.7) {
+    //  this.edges[this.oldestNode].scale.z = ((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
+    //}
 
     this.oldestNode++;
     if (this.oldestNode >= this.nodes.length) {
@@ -49,7 +49,9 @@ var tick = function() {
     }
 
     this.dirs[this.currentNode] = newDir;
+  }
 
+  if (this.turnDir != 0.0) {
     var oldRad = this.ball.rotation.y;
     var oldRot = { r: 0 };
     var currentDir = this.dirs[this.oldestNode];
@@ -212,7 +214,7 @@ var updateCameraLine = (function() {
     cameraLineStart.copy(ball.position);
     ball.translateX(d * 2.0);
 
-    cameraLineStart.y = 20.0;
+    cameraLineStart.y = 30.0;
 
     cameraLine.start.copy(cameraLineStart);
     cameraLine.end.copy(cameraLineEnd);
