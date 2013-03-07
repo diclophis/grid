@@ -2,20 +2,23 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
+  background: black;
+}
+#canvas-container {
 }
 canvas, svg {
-  /*
   image-rendering: optimizeSpeed;
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: optimize-contrast;
   -ms-interpolation-mode: nearest-neighbor;
-  */
   -webkit-touch-callout: none;
   -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: rgba(0,0,0,0); 
   -webkit-user-select: none;
   -webkit-tap-highlight-color: rgba(0,0,0,0); 
+  width: 99% !important;
+  height: 99% !important;
 }
 #fullscreen-button {
   position: absolute; top: 0; left: 0;

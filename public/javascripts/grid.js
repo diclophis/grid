@@ -2,31 +2,39 @@ var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
 
-  if (this.paused || dt > 0.04) {
+  if (this.paused) { // || dt > 0.9) {
     return;
   }
 
   this.st += dt;
+  this.resetTimer += dt;
 
   TWEEN.update();
 
-  if (this.speed < 75) {
-    this.speed += 10.0 * dt;
+  if (this.speed < 65) {
+    this.speed += 8.0 * dt;
   }
 
   var turn = (1 / (this.speed / 10.0)) * 500; //1100;
 
   var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
+
   this.ballRayCaster.set(foo, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
   var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
   var nextEdgeToIntersectWith = (((this.oldestNode)) % this.nodes.length);
+  this.nodes[nextNodeToIntersectWith].children[0].geometry.computeBoundingSphere();
+  this.nodes[thisNodeToIntersectWith].children[0].geometry.computeBoundingSphere();
+  this.edges[nextEdgeToIntersectWith].children[0].geometry.computeBoundingSphere();
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
   var intersectsWithThisNode = this.ballRayCaster.intersectObject(this.nodes[thisNodeToIntersectWith], true);
   var intersectsWithEdge = this.ballRayCaster.intersectObject(this.edges[nextEdgeToIntersectWith], true);
 
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
     this.paused = true;
+    setTimeout(function() {
+      //window.location.reload();
+    }, 500);
   }
 
   if (intersectsWithNode.length > 0) {
@@ -50,35 +58,48 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
   }
-
-  if (this.turnDir != 0.0) {
-    var oldRad = this.ball.rotation.y;
+//console.log(this.leftVector.length(), this.resetTimer);
+  if (!this.speedUp && this.leftVector.length() > 0.0) {
+    if (this.leftVector.x > 0) {
+      this.turnDir = 1;
+    } else {
+      this.turnDir = -1;
+    }
+  }
+  if (this.turnDir != 0.0 && this.resetTimer > this.resetTimeout) {
+    //console.log("wtf", this.resetTimer, this.resetTimeout);
+    this.leftVector.set(0, 0);
+    this.resetTimer = 0.0;
     var oldRot = { r: 0 };
-    var currentDir = this.dirs[this.oldestNode];
-    var currentRot = THREE.Math.degToRad(((currentDir * 90.00) - 90.00));
+    var oldRad = this.ball.rotation.y;
 
-    var deltaDeg = Math.round(THREE.Math.radToDeg(oldRad) - THREE.Math.radToDeg(currentRot));
-    while(deltaDeg >= 360 || deltaDeg <= -360) {
-      if (deltaDeg >= 360) {
-        deltaDeg -= 360;
+    if (false) {
+      var currentDir = this.dirs[this.oldestNode];
+      var currentRot = THREE.Math.degToRad(((currentDir * 90.00) - 90.00));
+
+      var deltaDeg = Math.round(THREE.Math.radToDeg(oldRad) - THREE.Math.radToDeg(currentRot));
+      while(deltaDeg >= 360 || deltaDeg <= -360) {
+        if (deltaDeg >= 360) {
+          deltaDeg -= 360;
+        }
+        if (deltaDeg <= -360) {
+          deltaDeg += 360;
+        }
       }
-      if (deltaDeg <= -360) {
-        deltaDeg += 360;
+
+      if (deltaDeg == -270.0) {
+        deltaDeg = 90.0;
       }
+      if (deltaDeg == 270.0) {
+        deltaDeg = -90.0;
+      }
+    } else {
+      deltaDeg = 90.0 * this.turnDir;
     }
-
-    if (deltaDeg == -270.0) {
-      deltaDeg = 90.0;
-    }
-    if (deltaDeg == 270.0) {
-      deltaDeg = -90.0;
-    }
-
-    deltaDeg = 90.0 * this.turnDir;
-
     this.turnDir = 0.0;
     var newRot = { r: deltaDeg };
     var b = this.ball;
+    var f = this;
     var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, turn);
     ballRotTween.onUpdate(function() {
       b.rotation.y = oldRad - THREE.Math.degToRad(this.r);
@@ -94,11 +115,14 @@ var tick = function() {
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
   this.renderer.clear(true, true, true);
-  this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
-  this.renderer.render(this.scene, this.camera);
-
+  if (!this.renderDebugCamera) {
+    if (this.renderer.setViewport) {
+      this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
+    }
+    //this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
+    this.renderer.render(this.scene, this.camera);
+  }
   if (this.renderDebugCamera) {
     this.debugCameraHelper.visible = true;
     var view_left = 0.5;
@@ -109,7 +133,9 @@ var tick = function() {
     var bottom = Math.floor(this.wsa.ay * view_bottom);
     var width  = Math.floor(this.wsa.ax  * view_width);
     var height = Math.floor(this.wsa.ay * view_height);
-    this.renderer.setViewport(left, bottom, width, height);
+    if (this.renderer.setViewport) {
+      this.renderer.setViewport(left, bottom, width, height);
+    }
     this.debugCamera.aspect = width / height;
     this.renderer.render(this.scene, this.debugCamera);
   }
@@ -117,22 +143,24 @@ var tick = function() {
 
 var createBall = function() {
   var ballObject = new THREE.Object3D();
-  var textMat = new THREE.MeshBasicMaterial({color: 0xffaa00, wireframe: true});
+  var textMat = new THREE.MeshBasicMaterial({color: 0xffaa00, wireframe: false});
   var radius = 5;
-  var sections = 10;
+  var sections = 2;
   var trackPointGeo = new THREE.SphereGeometry(radius, sections, sections);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
-  ballObject.position.set(0, 5, 0);
+  ballObject.position.set(0, 8, 0);
   return ballObject;
 };
 
 var createNodeObject = function(nodeMaterial) {
   var x = 16.0;
-  var y = 1.0;
+  var y = 8.0;
   var z = 16.0;
 
   var nodeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
+  //var removed = nodeGeometry.mergeVertices();
+  //console.log(removed);
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
@@ -140,11 +168,13 @@ var createNodeObject = function(nodeMaterial) {
 };
 
 var createEdgeObject = function(edgeMaterial) {
-  var x = 20.0;
-  var y = 0.5;
+  var x = 25.0;
+  var y = 2.0;
   var z = 16.0;
 
   var edgeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
+  //var removed = edgeGeometry.mergeVertices();
+  //console.log(removed);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
   edgeObject.scale.z = 0.9;
@@ -255,13 +285,21 @@ var main = function(body) {
   var pointLight = createPointLight();
   scene.add(pointLight);
 
-  var skyBoxCamera = createCamera(wsa, 1000, 30);
+  var skyBoxCamera = createCamera(wsa, 1000, 120);
   var skyBoxScene = createScene();
   var skyBoxMaterial = createMeshBasicWireframeMaterial(true);
-  var skyBox = createSkyBox(skyBoxMaterial, 10);
+  var skyBox = createSkyBox(skyBoxMaterial, 2);
   skyBoxScene.add(skyBox);
 
-  var renderer = new THREE.WebGLRenderer({});
+  var renderer = null;
+
+  try {
+    //throw new Exception("");
+    renderer = new THREE.WebGLRenderer({});
+  } catch(e) {
+    console.log(e);
+    var renderer = new THREE.CanvasRenderer({});
+  }
 
   renderer.setSize(wsa.x, wsa.y);
   renderer.autoClear = false;
@@ -278,18 +316,19 @@ var main = function(body) {
 
   var max = 3;
 
-  for (var i=0; i<max; i++) {
-    var baseNodeMaterial = createMeshBasicWireframeMaterial(false);
-    var baseNode = createNodeObject(baseNodeMaterial);
-    scene.add(baseNode);
-    nodes.push(baseNode);
-  }
 
   for (var i=0; i<max; i++) {
     var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
     var baseEdge = createEdgeObject(baseEdgeMaterial);
     scene.add(baseEdge);
     edges.push(baseEdge);
+  }
+
+  for (var i=0; i<max; i++) {
+    var baseNodeMaterial = createMeshBasicWireframeMaterial(false);
+    var baseNode = createNodeObject(baseNodeMaterial);
+    scene.add(baseNode);
+    nodes.push(baseNode);
   }
 
   for (var i=0; i<(max); i++) {
@@ -346,12 +385,12 @@ var main = function(body) {
     edges: edges,
     nodes: nodes,
     dirs: dirs,
-    resetTimeout: 0.6325,
+    resetTimeout: 0.1,
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
-    speed: 10,
+    speed: 8,
     renderDebugCamera: false,
     resizeTimeout: null,
     turnDir: 0.0,
