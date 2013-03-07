@@ -117,14 +117,14 @@ var tick = function() {
 
   this.renderer.clear(true, true, true);
   if (!this.renderDebugCamera) {
-    if (this.renderer.setViewport) {
-      this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
-    }
+    //if (this.renderer.setViewport) {
+    //  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
+    //}
     //this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
     this.renderer.render(this.scene, this.camera);
   }
   if (this.renderDebugCamera) {
-    this.debugCameraHelper.visible = true;
+    //this.debugCameraHelper.visible = true;
     var view_left = 0.5;
     var view_bottom = 0.5;
     var view_width = 0.5;
@@ -133,9 +133,9 @@ var tick = function() {
     var bottom = Math.floor(this.wsa.ay * view_bottom);
     var width  = Math.floor(this.wsa.ax  * view_width);
     var height = Math.floor(this.wsa.ay * view_height);
-    if (this.renderer.setViewport) {
-      this.renderer.setViewport(left, bottom, width, height);
-    }
+    //if (this.renderer.setViewport) {
+    //  this.renderer.setViewport(left, bottom, width, height);
+    //}
     this.debugCamera.aspect = width / height;
     this.renderer.render(this.scene, this.debugCamera);
   }
