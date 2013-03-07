@@ -1,8 +1,9 @@
 var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
+  //console.log(dt);
 
-  if (this.paused) {
+  if (this.paused || dt > 0.04) {
     return;
   }
 
@@ -10,17 +11,12 @@ var tick = function() {
 
   TWEEN.update();
 
-  var speed_to_turn_ratio = 10.0 / 1200.0;
-
-  if (this.speed < 100) {
-    this.speed += 2.0 * dt;
+  if (this.speed < 75) {
+    this.speed += 5.0 * dt;
   }
 
-  var turn = (1 / (this.speed / 10.0)) * 1200; //1 / (this.speed / speed_to_turn_ratio);
+  var turn = (1 / (this.speed / 10.0)) * 1100; //1 / (this.speed / speed_to_turn_ratio);
 
-  //console.log(this.ballRayCaster);
-  //ballRayCastervar foo = this.ball.position.clone();
-  //Math.round(this.ball.position.x);
   var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
   this.ballRayCaster.set(foo, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
@@ -30,13 +26,7 @@ var tick = function() {
   var intersectsWithThisNode = this.ballRayCaster.intersectObject(this.nodes[thisNodeToIntersectWith], true);
   var intersectsWithEdge = this.ballRayCaster.intersectObject(this.edges[nextEdgeToIntersectWith], true);
 
-  //var p = false;
-
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
-    //console.log("foo", nextEdgeToIntersectWith, thisNodeToIntersectWith, this.ballRayCaster, (this.edges[nextEdgeToIntersectWith]));
-    //this.edges[nextEdgeToIntersectWith].position.y = 20.0;
-    //this.edges[nextEdgeToIntersectWith].rotation.y = 20.0;
-    //this.speed = 1.0;
     this.paused = true;
   }
 
@@ -45,8 +35,9 @@ var tick = function() {
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
 
-    this.edges[this.oldestNode].scale.z = (1 / (this.speed / 10.0)) * 1.0;
-    //console.log(this.edges[this.oldestNode].scale);
+    if (this.edges[this.oldestNode].scale.z > 0.5) {
+      this.edges[this.oldestNode].scale.z = ((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.075);
+    }
 
     this.oldestNode++;
     if (this.oldestNode >= this.nodes.length) {
@@ -99,14 +90,14 @@ var tick = function() {
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-  this.renderer.setSize(this.wsa.x, this.wsa.y);
-  this.renderer.setViewport(0, 0, this.wsa.ax / 2.0, this.wsa.ay / 2.0);
+  //this.renderer.setSize(this.wsa.x, this.wsa.y);
+  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
   //this.renderer.clear(false, true, false);
   this.renderer.clear(true, true, true);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
-  if (true) {
+  if (this.renderDebugCamera) {
     this.debugCameraHelper.visible = true;
     var view_left = 0.5;
     var view_bottom = 0.5;
@@ -126,7 +117,8 @@ var createBall = function() {
   var ballObject = new THREE.Object3D();
   var textMat = new THREE.MeshBasicMaterial({color: 0xffaa00, wireframe: true});
   var radius = 5;
-  var trackPointGeo = new THREE.SphereGeometry(radius, 3, 3);
+  var sections = 10;
+  var trackPointGeo = new THREE.SphereGeometry(radius, sections, sections);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
   ballObject.position.set(0, 5, 0);
@@ -146,13 +138,14 @@ var createNodeObject = function(nodeMaterial) {
 };
 
 var createEdgeObject = function(edgeMaterial) {
-  var x = 16.1;
-  var y = 1.0;
+  var x = 20.0;
+  var y = 0.5;
   var z = 16.0;
 
   var edgeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
+  edgeObject.scale.z = 0.9;
   edgeObject.add(edgeMesh);
   return edgeObject;
 };
@@ -183,6 +176,7 @@ var attachEdgeToNode = (function() {
     edge.position.addVectors(edgePosition[position], node.position);
     la.addVectors(node.position, edgeDirection[position]);
     edge.lookAt(la);
+    edge.position.y = -0.25;
   }
 })();
 
@@ -190,6 +184,7 @@ var placeNodeAtEdge = function(node, edge) {
   var d = -16.0;
   edge.translateX(d);
   node.position = edge.position.clone();
+  node.position.y = 0;
   edge.translateX(-d);
 };
 
@@ -249,7 +244,7 @@ var main = function(body) {
 
   var skyBoxCamera = createCamera(wsa, 1000, 30);
   var skyBoxScene = createScene();
-  var skyBoxMaterial = createMeshBasicWireframeMaterial();
+  var skyBoxMaterial = createMeshBasicWireframeMaterial(true);
   var skyBox = createSkyBox(skyBoxMaterial, 10);
   skyBoxScene.add(skyBox);
 
@@ -271,14 +266,14 @@ var main = function(body) {
   var max = 3;
 
   for (var i=0; i<max; i++) {
-    var baseNodeMaterial = createMeshBasicWireframeMaterial();
+    var baseNodeMaterial = createMeshBasicWireframeMaterial(false);
     var baseNode = createNodeObject(baseNodeMaterial);
     scene.add(baseNode);
     nodes.push(baseNode);
   }
 
   for (var i=0; i<max; i++) {
-    var baseEdgeMaterial = createMeshBasicWireframeMaterial();
+    var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
     var baseEdge = createEdgeObject(baseEdgeMaterial);
     scene.add(baseEdge);
     edges.push(baseEdge);
@@ -349,6 +344,7 @@ var main = function(body) {
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
     speed: 10,
+    renderDebugCamera: false,
   };
 
   //thingy.ballRayCaster.precision = 1.0;
@@ -365,9 +361,14 @@ var main = function(body) {
   }, false);
 
   var pauseButton = document.getElementById("pause-button");
+  var debugCameraButton = document.getElementById("debug-camera-button");
 
   pauseButton.addEventListener('click', function(ev) {
     this.paused = !this.paused;
+  }.bind(thingy), false);
+
+  debugCameraButton.addEventListener('click', function(ev) {
+    this.renderDebugCamera = !this.renderDebugCamera;
   }.bind(thingy), false);
 
   var onWindowUnload = function(ev) {
