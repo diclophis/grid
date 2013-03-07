@@ -1,8 +1,14 @@
-#canvas-container, canvas, body, html {
+#mods, #canvas-container, canvas, body, html {
   margin: 0;
   padding: 0;
   overflow: hidden;
   background: black;
+}
+#mods {
+  position: absolute;
+  right: 0;
+  background: cyan;
+  padding: 1em;
 }
 #canvas-container {
 }

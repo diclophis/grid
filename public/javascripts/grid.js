@@ -11,7 +11,7 @@ var tick = function() {
 
   TWEEN.update();
 
-  if (this.speed < 65) {
+  if (this.speed < 100) {
     this.speed += 8.0 * dt;
   }
 
@@ -36,11 +36,12 @@ var tick = function() {
     //  window.location.reload();
      //o var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
       this.ball.position.copy(this.nodes[thisNodeToIntersectWith].position);
-      this.ball.position.y = 10;
+      this.ball.position.y = 5;
       this.paused = false; 
       var currentDir = this.dirs[this.oldestNode];
       var currentRot = THREE.Math.degToRad(((currentDir * 90.00) ));
       this.ball.rotation.y = currentRot + (Math.PI / -2.0);
+      this.speed = 10.0;
 
     }.bind(this), 333);
   }
@@ -162,7 +163,7 @@ var createBall = function() {
   var trackPointGeo = new THREE.SphereGeometry(radius, sections, sections);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
-  ballObject.position.set(0, 8, 0);
+  ballObject.position.set(0, 5, 0);
   return ballObject;
 };
 
@@ -171,9 +172,7 @@ var createNodeObject = function(nodeMaterial) {
   var y = 8.0;
   var z = 16.0;
 
-  var nodeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
-  //var removed = nodeGeometry.mergeVertices();
-  //console.log(removed);
+  var nodeGeometry = new THREE.CubeGeometry(x, y, z, 1, 1, 1, null, true);
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
@@ -246,18 +245,18 @@ var updateCameraLine = (function() {
   var cameraLineStart = new THREE.Vector3(0, 0, 0);
   var cameraLineEnd = new THREE.Vector3(0, 0, 0);
   var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
-  var d = 50.0;
+  var d = 100.0;
 
   return function(ball) {
-    ball.translateX(d);
+    ball.translateX(d * 0.1);
     cameraLineEnd.copy(ball.position);
-    ball.translateX(-d);
+    ball.translateX(-d * 0.1);
 
-    ball.translateX(-d * 2.0);
+    ball.translateX(-d * 1.1);
     cameraLineStart.copy(ball.position);
-    ball.translateX(d * 2.0);
+    ball.translateX(d * 1.1);
 
-    cameraLineStart.y = 30.0;
+    cameraLineStart.y = 50.0;
 
     cameraLine.start.copy(cameraLineStart);
     cameraLine.end.copy(cameraLineEnd);
@@ -267,10 +266,6 @@ var updateCameraLine = (function() {
 })();
 
 var onKeyDown = function(ev) {
-  if (!this.soundStarted) {
-    play_mod(random_mod_href());
-    this.soundStarted = true;
-  }
   switch(ev.keyCode) {
     case 37:
       this.turnDir = -1;
@@ -279,6 +274,13 @@ var onKeyDown = function(ev) {
       this.turnDir = 1;
       break
   };
+
+  if (this.turnDir != 0) {
+  if (!this.soundStarted) {
+    play_mod(random_mod_href());
+    this.soundStarted = true;
+  }
+  }
 };
 
 var main = function(body) {
@@ -288,7 +290,7 @@ var main = function(body) {
   var container = createContainer();
   body.appendChild(container);
 
-  var camera = createCamera(wsa, 300, 40);
+  var camera = createCamera(wsa, 500, 40);
   var debugCamera = createCamera(wsa, 2000, 60);
 
   var scene = createScene();
@@ -302,7 +304,7 @@ var main = function(body) {
   var pointLight = createPointLight();
   scene.add(pointLight);
 
-  var skyBoxCamera = createCamera(wsa, 1000, 120);
+  var skyBoxCamera = createCamera(wsa, 1000, 60);
   var skyBoxScene = createScene();
   var skyBoxMaterial = createMeshBasicWireframeMaterial(true);
   var skyBox = createSkyBox(skyBoxMaterial, 2);
@@ -331,7 +333,7 @@ var main = function(body) {
   var edges = new Array();
   var dirs = new Array();
 
-  var max = 6;
+  var max = 4;
 
   for (var i=0; i<max; i++) {
     var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
