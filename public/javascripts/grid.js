@@ -55,14 +55,14 @@ var tick = function() {
 
     var newRot = { r: deltaDeg };
     var b = this.ball;
-    var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 250);
+    var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 125);
     ballRotTween.onUpdate(function() {
       b.rotation.y = oldRad - THREE.Math.degToRad(this.r);
     });
     ballRotTween.start();
   }
 
-  this.ball.translateX(50.0 * dt);
+  this.ball.translateX(115.0 * dt);
 
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
@@ -70,25 +70,27 @@ var tick = function() {
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
+  this.renderer.setSize(this.wsa.x, this.wsa.y);
+  this.renderer.setViewport(0, 0, this.wsa.ax / 2.0, this.wsa.ay / 2.0);
   //this.renderer.clear(false, true, false);
   this.renderer.clear(true, true, true);
   this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
   this.renderer.render(this.scene, this.camera);
 
-  this.debugCameraHelper.visible = true;
-  var view_left = 0.5;
-  var view_bottom = 0.5;
-  var view_width = 0.5;
-  var view_height = 0.5;
-  var left   = Math.floor(this.wsa.ax  * view_left);
-  var bottom = Math.floor(this.wsa.ay * view_bottom);
-  var width  = Math.floor(this.wsa.ax  * view_width);
-  var height = Math.floor(this.wsa.ay * view_height);
-  this.renderer.setViewport(left, bottom, width, height);
-  this.debugCamera.aspect = width / height;
-  this.renderer.render(this.scene, this.debugCamera);
-
+  if (true) {
+    this.debugCameraHelper.visible = true;
+    var view_left = 0.5;
+    var view_bottom = 0.5;
+    var view_width = 0.5;
+    var view_height = 0.5;
+    var left   = Math.floor(this.wsa.ax  * view_left);
+    var bottom = Math.floor(this.wsa.ay * view_bottom);
+    var width  = Math.floor(this.wsa.ax  * view_width);
+    var height = Math.floor(this.wsa.ay * view_height);
+    this.renderer.setViewport(left, bottom, width, height);
+    this.debugCamera.aspect = width / height;
+    this.renderer.render(this.scene, this.debugCamera);
+  }
 };
 
 var createBall = function() {
