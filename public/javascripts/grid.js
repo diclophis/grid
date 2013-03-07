@@ -10,14 +10,43 @@ var tick = function() {
 
   TWEEN.update();
 
-  this.ballRayCaster.set(this.ball.position, this.downDirectionVector);
+  var speed_to_turn_ratio = 10.0 / 1200.0;
+
+  if (this.speed < 100) {
+    this.speed += 2.0 * dt;
+  }
+
+  var turn = (1 / (this.speed / 10.0)) * 1200; //1 / (this.speed / speed_to_turn_ratio);
+
+  //console.log(this.ballRayCaster);
+  //ballRayCastervar foo = this.ball.position.clone();
+  //Math.round(this.ball.position.x);
+  var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
+  this.ballRayCaster.set(foo, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
+  var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
+  var nextEdgeToIntersectWith = (((this.oldestNode)) % this.nodes.length);
   var intersectsWithNode = this.ballRayCaster.intersectObject(this.nodes[nextNodeToIntersectWith], true);
+  var intersectsWithThisNode = this.ballRayCaster.intersectObject(this.nodes[thisNodeToIntersectWith], true);
+  var intersectsWithEdge = this.ballRayCaster.intersectObject(this.edges[nextEdgeToIntersectWith], true);
+
+  //var p = false;
+
+  if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
+    //console.log("foo", nextEdgeToIntersectWith, thisNodeToIntersectWith, this.ballRayCaster, (this.edges[nextEdgeToIntersectWith]));
+    //this.edges[nextEdgeToIntersectWith].position.y = 20.0;
+    //this.edges[nextEdgeToIntersectWith].rotation.y = 20.0;
+    //this.speed = 1.0;
+    this.paused = true;
+  }
 
   if (intersectsWithNode.length > 0) {
     var newDir = dirNotInDir(this.dirs[this.currentNode]);
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
+
+    this.edges[this.oldestNode].scale.z = (1 / (this.speed / 10.0)) * 1.0;
+    //console.log(this.edges[this.oldestNode].scale);
 
     this.oldestNode++;
     if (this.oldestNode >= this.nodes.length) {
@@ -55,14 +84,14 @@ var tick = function() {
 
     var newRot = { r: deltaDeg };
     var b = this.ball;
-    var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, 125);
+    var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, turn);
     ballRotTween.onUpdate(function() {
       b.rotation.y = oldRad - THREE.Math.degToRad(this.r);
     });
     ballRotTween.start();
   }
 
-  this.ball.translateX(115.0 * dt);
+  this.ball.translateX(this.speed * dt);
 
   this.debugCamera.position.set(this.ball.position.x - 55, 55, this.ball.position.z - 55);
   this.debugCamera.lookAt(this.ball.position);
@@ -117,9 +146,9 @@ var createNodeObject = function(nodeMaterial) {
 };
 
 var createEdgeObject = function(edgeMaterial) {
-  var x = 16.0;
+  var x = 16.1;
   var y = 1.0;
-  var z = 2.0;
+  var z = 16.0;
 
   var edgeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
@@ -255,12 +284,23 @@ var main = function(body) {
     edges.push(baseEdge);
   }
 
-  attachEdgeToNode(edges[0], nodes[0], 1);
-  dirs.push(1);
-  for (var i=0; i<=(max - 2); i++) {
-    placeNodeAtEdge(nodes[i + 1], edges[i]);
-    var randomDir = dirNotInDir(dirs[i]);
-    attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
+  //attachEdgeToNode(edges[0], nodes[0], 1);
+  //dirs.push(1);
+  for (var i=0; i<(max); i++) {
+    var randomDir = null;
+    if (i === 0) {
+      randomDir = 1;
+      attachEdgeToNode(edges[i], nodes[i], randomDir);
+    } else {
+      randomDir = dirNotInDir(dirs[i - 1]);
+    }
+    if (i > 0) {
+      console.log("putting node", i, "next to edge", i - 1);
+      placeNodeAtEdge(nodes[i], edges[i-1]);
+    }
+    console.log("putting edge", i, "next to node", i);
+    attachEdgeToNode(edges[i], nodes[i], randomDir);
+    //attachEdgeToNode(edges[i + 1], nodes[i + 1], randomDir);
     dirs.push(randomDir);
   }
 
@@ -298,7 +338,7 @@ var main = function(body) {
     paused: false,
     //
     ball: ball,
-    ballRayCaster: new THREE.Raycaster(ball.position, new THREE.Vector3(0, -1, 0)),
+    ballRayCaster: new THREE.Raycaster(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -1, 0)),
     forward_angle: 0,
     edges: edges,
     nodes: nodes,
@@ -308,7 +348,10 @@ var main = function(body) {
     currentNode: max - 1,
     oldestNode: 0,
     downDirectionVector: new THREE.Vector3(0, -1, 0),
+    speed: 10,
   };
+
+  //thingy.ballRayCaster.precision = 1.0;
 
   var fullscreenButton = document.getElementById("fullscreen-button");
 
