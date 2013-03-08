@@ -6,12 +6,19 @@ var tick = function() {
     return;
   }
 
+  if (dt > 0.133) {
+    //console.log("slow");
+    this.subdivide += 0.66;
+    onWindowResize.apply(this);
+    return;
+  }
+
   this.st += dt;
   this.resetTimer += dt;
 
   TWEEN.update();
 
-  if (this.speed < 100) {
+  if (this.speed < 70) {
     this.speed += 8.0 * dt;
   }
 
@@ -129,7 +136,7 @@ var tick = function() {
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
 
-  this.renderer.clear(true, true, true);
+  this.renderer.clear(false, false, false);
   if (!this.renderDebugCamera) {
     //if (this.renderer.setViewport) {
     //  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
@@ -189,7 +196,7 @@ var createEdgeObject = function(edgeMaterial) {
   //console.log(removed);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
-  edgeObject.scale.z = 0.9;
+  edgeObject.scale.z = 0.8;
   edgeObject.add(edgeMesh);
   return edgeObject;
 };
@@ -245,7 +252,7 @@ var updateCameraLine = (function() {
   var cameraLineStart = new THREE.Vector3(0, 0, 0);
   var cameraLineEnd = new THREE.Vector3(0, 0, 0);
   var cameraLine = new THREE.Line3(cameraLineStart, cameraLineEnd);
-  var d = 100.0;
+  var d = 70.0;
 
   return function(ball) {
     ball.translateX(d * 0.1);
@@ -256,7 +263,7 @@ var updateCameraLine = (function() {
     cameraLineStart.copy(ball.position);
     ball.translateX(d * 1.1);
 
-    cameraLineStart.y = 50.0;
+    cameraLineStart.y = 70.0;
 
     cameraLine.start.copy(cameraLineStart);
     cameraLine.end.copy(cameraLineEnd);
@@ -284,8 +291,9 @@ var onKeyDown = function(ev) {
 };
 
 var main = function(body) {
+  var subdivide = 1.0;
 
-  var wsa = windowSizeAndAspect();
+  var wsa = windowSizeAndAspect(subdivide);
 
   var container = createContainer();
   body.appendChild(container);
@@ -322,7 +330,7 @@ var main = function(body) {
 
   renderer.setSize(wsa.x, wsa.y);
   renderer.autoClear = false;
-  renderer.setClearColorHex(0x000000, 1.0);
+  //renderer.setClearColorHex(0x000000, 1.0);
   container.appendChild(renderer.domElement);
 
   var ball = createBall();
@@ -333,7 +341,7 @@ var main = function(body) {
   var edges = new Array();
   var dirs = new Array();
 
-  var max = 4;
+  var max = 3;
 
   for (var i=0; i<max; i++) {
     var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
@@ -372,6 +380,7 @@ var main = function(body) {
   scene.updateMatrixWorld();
 
   var thingy = {
+    subdivide: subdivide,
     fps: 35.0,
     then: Date.now(),
     st: 0,
