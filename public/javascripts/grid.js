@@ -2,12 +2,11 @@ var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
 
-  if (this.paused) { // || dt > 0.9) {
+  if (this.paused || dt > 1.0) {
     return;
   }
 
   if (dt > 0.133) {
-    //console.log("slow");
     this.subdivide += 0.66;
     onWindowResize.apply(this);
     return;
@@ -19,8 +18,11 @@ var tick = function() {
 
   TWEEN.update();
 
-  if (this.speed < 70) {
+  var max_speed = 75;
+  if (this.speed < max_speed) {
     this.speed += 8.0 * dt;
+  } else {
+    this.speed = max_speed;
   }
 
   var turn = (1 / (this.speed / 10.0)) * 500; //1100;
@@ -39,19 +41,19 @@ var tick = function() {
   var intersectsWithEdge = this.ballRayCaster.intersectObject(this.edges[nextEdgeToIntersectWith], true);
 
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
-    //this.paused = true;
+    this.turnLock = true;
     setTimeout(function() {
-    //  window.location.reload();
-     //o var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
       this.ball.position.copy(this.nodes[thisNodeToIntersectWith].position);
       this.ball.position.y = 5;
-      //this.paused = false; 
       var currentDir = this.dirs[this.oldestNode];
       var currentRot = THREE.Math.degToRad(((currentDir * 90.00) ));
       this.ball.rotation.y = currentRot + (Math.PI / -2.0);
+      this.turnLock = false;
+      this.resetTimer = -(this.resetTimeout * 2.0);
       this.speed = 10.0;
-    }.bind(this), 333);
-    this.speed = 1000.0;
+    }.bind(this), 666);
+    this.speed = 1.0;
+    this.lastTurnAssist = this.st;
   }
 
   var aiTurnAssist = false;
@@ -65,6 +67,8 @@ var tick = function() {
     }
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
+    this.nodes[this.oldestNode].uuid += this.nodes.length * 2;
+    this.edges[this.oldestNode].uuid += this.nodes.length * 2;
 
     //if (this.edges[this.oldestNode].scale.z > 0.7) {
     //  this.edges[this.oldestNode].scale.z = ((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
@@ -82,31 +86,26 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
 
-    //this.turnDir = -1;
-    //if (this.turnDir === 0.0) {
-    //  aiTurnAssist = true;
-    //}
-    if (this.st < 5.0) {
+    if (this.st < (this.lastTurnAssist + 5.0)) {
       this.aiTurnAssistTimer = 0.0; //this.aiTurnAssistTimeout;
       this.aiTurnAssistFired = false;
     }
-    this.turnLock = this.currentNode;
   }
-  if (!this.speedUp && this.leftVector.length() > 0.0) {
+  if (this.turnLock === false && this.aiTurnAssistFired === false && this.aiTurnAssistTimer > this.aiTurnAssistTimeout) {
+    aiTurnAssist = true;
+  }
+  if (!this.aiTurnAssistFire && (this.turnLock === false) && (!this.speedUp) && (this.leftVector.length() > 0.0)) {
     if (this.leftVector.x > 0) {
       this.turnDir = 1;
     } else {
       this.turnDir = -1;
     }
-  }
-  if (this.turnLock === this.currentNode && this.aiTurnAssistFired === false && this.aiTurnAssistTimer > this.aiTurnAssistTimeout) {
-    aiTurnAssist = true;
+    aiTurnAssist = false;
   }
   if (aiTurnAssist || (this.turnDir != 0.0 && this.resetTimer > this.resetTimeout)) {
 
     this.aiTurnAssistFired = true;
-    this.aiTurnLock++;
-    //console.log("wtf", this.resetTimer, this.resetTimeout);
+    this.turnLock = true;
     this.leftVector.set(0, 0);
     this.resetTimer = 0.0;
     var oldRot = { r: 0 };
@@ -145,6 +144,7 @@ var tick = function() {
     });
     ballRotTween.onComplete(function() {
       f.turnLock = false;
+      f.leftVector.set(0, 0);
     });
     ballRotTween.start();
   }
@@ -156,6 +156,13 @@ var tick = function() {
 
   this.skyBoxCamera.rotation.y += dt * 1.0;
   this.debugCameraHelper.visible = false;
+
+  //var cmr = this.camera;
+  //var cmp = function(a, b) {
+  //  return a.position.distanceTo(cmr.position) - b.position.distanceTo(cmr.position);  
+  //};
+  //this.scene.children.sort(cmp);
+  //this.scene.children.reverse();
 
   this.renderer.clear(false, false, false);
   if (!this.renderDebugCamera) {
@@ -204,21 +211,21 @@ var createNodeObject = function(nodeMaterial) {
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
+  nodeObject.position.y = 0;
   return nodeObject;
 };
 
 var createEdgeObject = function(edgeMaterial) {
   var x = 25.0;
-  var y = 2.0;
+  var y = 0.01;
   var z = 16.0;
 
-  var edgeGeometry = new THREE.CubeGeometry(x, y, z, 2, 2, 2, null, true);
-  //var removed = edgeGeometry.mergeVertices();
-  //console.log(removed);
+  var edgeGeometry = new THREE.CubeGeometry(x, y, z, 1, 1, 1, null, true);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
   edgeObject.scale.z = 0.8;
   edgeObject.add(edgeMesh);
+  //edgeObject.position.y = 10;
   return edgeObject;
 };
 
@@ -248,7 +255,7 @@ var attachEdgeToNode = (function() {
     edge.position.addVectors(edgePosition[position], node.position);
     la.addVectors(node.position, edgeDirection[position]);
     edge.lookAt(la);
-    edge.position.y = -0.25;
+    edge.position.y = 4 + Math.random();
   }
 })();
 
@@ -294,20 +301,22 @@ var updateCameraLine = (function() {
 })();
 
 var onKeyDown = function(ev) {
-  switch(ev.keyCode) {
-    case 37:
-      this.turnDir = -1;
-      break;
-    case 39:
-      this.turnDir = 1;
-      break
-  };
+  if (this.resetTimer > this.resetTimeout) {
+    switch(ev.keyCode) {
+      case 37:
+        this.leftVector.x = -1;
+        break;
+      case 39:
+        this.leftVector.x = 1;
+        break
+    };
+  }
 
   if (this.turnDir != 0) {
-  if (!this.soundStarted) {
-    play_mod(random_mod_href());
-    this.soundStarted = true;
-  }
+    if (!this.soundStarted) {
+      play_mod(random_mod_href());
+      this.soundStarted = true;
+    }
   }
 };
 
@@ -342,7 +351,6 @@ var main = function(body) {
   var renderer = null;
 
   try {
-    //throw new Exception("");
     renderer = new THREE.WebGLRenderer({});
   } catch(e) {
     console.log(e);
@@ -351,12 +359,10 @@ var main = function(body) {
 
   renderer.setSize(wsa.x, wsa.y);
   renderer.autoClear = false;
+  renderer.sortElements = false;
+  renderer.sortObjects = false;
   //renderer.setClearColorHex(0x000000, 1.0);
   container.appendChild(renderer.domElement);
-
-  var ball = createBall();
-  ball.add(camera);
-  scene.add(ball);
 
   var nodes = new Array();
   var edges = new Array();
@@ -364,18 +370,23 @@ var main = function(body) {
 
   var max = 3;
 
-  for (var i=0; i<max; i++) {
-    var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
-    var baseEdge = createEdgeObject(baseEdgeMaterial);
-    scene.add(baseEdge);
-    edges.push(baseEdge);
-  }
-
+  var uuid = 0;
   for (var i=0; i<max; i++) {
     var baseNodeMaterial = createMeshBasicWireframeMaterial(false);
     var baseNode = createNodeObject(baseNodeMaterial);
+    baseNode.uuid = uuid++;
     scene.add(baseNode);
     nodes.push(baseNode);
+    console.log(uuid);
+  }
+
+  for (var i=0; i<max; i++) {
+    var baseEdgeMaterial = createMeshBasicWireframeMaterial(false);
+    var baseEdge = createEdgeObject(baseEdgeMaterial);
+    baseEdge.uuid = uuid++;
+    scene.add(baseEdge);
+    edges.push(baseEdge);
+    console.log(uuid);
   }
 
   for (var i=0; i<(max); i++) {
@@ -392,6 +403,10 @@ var main = function(body) {
     attachEdgeToNode(edges[i], nodes[i], randomDir);
     dirs.push(randomDir);
   }
+
+  var ball = createBall();
+  ball.add(camera);
+  scene.add(ball);
 
   var cameraLine = updateCameraLine(ball);
   camera.position.copy(cameraLine.start);
@@ -433,7 +448,7 @@ var main = function(body) {
     edges: edges,
     nodes: nodes,
     dirs: dirs,
-    resetTimeout: 0.1,
+    resetTimeout: 0.2,
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
@@ -445,7 +460,8 @@ var main = function(body) {
     startedMusic: false,
     aiTurnAssistTimer: 0,
     aiTurnAssistTimeout: 0.1,
-    aiTurnAssistFired: false,
+    aiTurnAssistFired: true,
+    lastTurnAssist: 0,
     turnLock: false,
   };
 
