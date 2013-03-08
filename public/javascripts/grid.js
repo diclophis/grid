@@ -6,8 +6,10 @@ var tick = function() {
     return;
   }
 
-  if (dt > 0.133) {
-    this.subdivide += 0.66;
+  if (dt > 0.177) {
+    if (this.subdivide < 3.0) {
+      this.subdivide += 1.0;
+    }
     onWindowResize.apply(this);
     return;
   }
@@ -72,7 +74,7 @@ var tick = function() {
     this.edges[this.oldestNode].uuid += this.nodes.length * 2;
 
     //if (this.edges[this.oldestNode].scale.z > 0.7) {
-    //  this.edges[this.oldestNode].scale.z = ((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
+      this.edges[this.oldestNode].scale.z = 0.4 + (Math.random() * 0.5); //((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
     //}
 
     this.oldestNode++;
@@ -196,8 +198,8 @@ var createBall = function() {
   var textMat = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false});
   textMat.color.setHex( Math.random() * 0xffffff );
   var radius = 5;
-  var sections = 10;
-  var trackPointGeo = new THREE.SphereGeometry(radius, sections, sections);
+  var sections = 5;
+  var trackPointGeo = new THREE.SphereGeometry(radius, sections * 3, sections / 2);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
   ballObject.position.set(0, 10, 0);
@@ -257,7 +259,7 @@ var attachEdgeToNode = (function() {
     edge.position.addVectors(edgePosition[position], node.position);
     la.addVectors(node.position, edgeDirection[position]);
     edge.lookAt(la);
-    edge.position.y = 4 + Math.random();
+    edge.position.y = 3; // + Math.random();
   }
 })();
 
