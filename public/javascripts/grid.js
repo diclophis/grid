@@ -42,18 +42,19 @@ var tick = function() {
 
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
     this.turnLock = true;
+    this.leftVector.set(0, 0);
+    this.speed = 0;
     setTimeout(function() {
       this.ball.position.copy(this.nodes[thisNodeToIntersectWith].position);
-      this.ball.position.y = 5;
-      var currentDir = this.dirs[this.oldestNode];
+      this.ball.position.y = 10;
+      var currentDir = this.dirs[thisNodeToIntersectWith];
       var currentRot = THREE.Math.degToRad(((currentDir * 90.00) ));
       this.ball.rotation.y = currentRot + (Math.PI / -2.0);
+      this.resetTimer = -(this.resetTimeout * 10.0);
+      this.lastTurnAssist = this.st;
       this.turnLock = false;
-      this.resetTimer = -(this.resetTimeout * 2.0);
-      this.speed = 10.0;
-    }.bind(this), 666);
-    this.speed = 1.0;
-    this.lastTurnAssist = this.st;
+    }.bind(this), 33);
+    return;
   }
 
   var aiTurnAssist = false;
@@ -192,13 +193,14 @@ var tick = function() {
 
 var createBall = function() {
   var ballObject = new THREE.Object3D();
-  var textMat = new THREE.MeshBasicMaterial({color: 0xffaa00, wireframe: false});
+  var textMat = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false});
+  textMat.color.setHex( Math.random() * 0xffffff );
   var radius = 5;
-  var sections = 2;
+  var sections = 10;
   var trackPointGeo = new THREE.SphereGeometry(radius, sections, sections);
   var trackPointMesh = new THREE.Mesh(trackPointGeo, textMat);
   ballObject.add(trackPointMesh);
-  ballObject.position.set(0, 5, 0);
+  ballObject.position.set(0, 10, 0);
   return ballObject;
 };
 
@@ -223,7 +225,7 @@ var createEdgeObject = function(edgeMaterial) {
   var edgeGeometry = new THREE.CubeGeometry(x, y, z, 1, 1, 1, null, true);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
-  edgeObject.scale.z = 0.8;
+  edgeObject.scale.z = 0.7;
   edgeObject.add(edgeMesh);
   //edgeObject.position.y = 10;
   return edgeObject;
@@ -312,7 +314,7 @@ var onKeyDown = function(ev) {
     };
   }
 
-  if (this.turnDir != 0) {
+  if (this.leftVector.x != 0) {
     if (!this.soundStarted) {
       play_mod(random_mod_href());
       this.soundStarted = true;
