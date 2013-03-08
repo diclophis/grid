@@ -12,6 +12,15 @@
 }
 #canvas-container {
 }
+#buttons-container {
+  height: 10%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+}
 canvas, svg {
   image-rendering: optimizeSpeed;
   image-rendering: -moz-crisp-edges;
@@ -29,30 +38,25 @@ canvas, svg {
 #fullscreen-button {
   position: absolute; top: 0; left: 0;
   background-color: rgba(255, 0, 0, 0.5);
-  width: 10%; height: 10%;
 }
 #pause-button {
   position: absolute; top: 0; left: 10%;
   background-color: rgba(0, 255, 0, 0.5);
-  width: 10%; height: 10%;
 }
 #debug-camera-button {
   position: absolute; top: 0; left: 20%;
   background-color: rgba(0, 0, 255, 0.5);
-  width: 10%; height: 10%;
+  width: 10%;
+  x-height: 10%;
 }
-
 li a:link, li a:visited {
   display: block;
   border: 0;
-  x-padding-left: 28px;
   color: #c55500;
 }
-
 li a:link, li a:visited {
   display: block;
   border: 0;
-  x-padding-left: 28px;
   color: #c55500;
 }
 a:visited {
@@ -70,18 +74,15 @@ a:link, a:visited {
   text-decoration: none;
 }
 #pause-button a:before {
-  
-  left: 2px;
-  width: 4px;
-  height: 14px;
-
+  left: 43%;
+  top: 25%;
+  width: 5%;
+  height: 50%;
   border: 4px solid #c55500;
   border-width: 0 4px;
-  x-margin-top: -7px;
   background: transparent;
 }
 li a:before, li a:after {
-  x-margin: -8px 0 0;
   background: #c55500;
 }
 li:before, li:after, li a:before, li a:after {
@@ -91,7 +92,6 @@ li:before, li:after, li a:before, li a:after {
   left: 0;
 }
 li a:before, li a:after {
-  x-margin: -8px 0 0;
   background: #c55500;
 }
 li:before, li:after, li a:before, li a:after {
@@ -102,8 +102,10 @@ li:before, li:after, li a:before, li a:after {
 }
 li {
   list-style: none;
+  height: 100%;
+  width: 10%;
 }
 html, body {
-  font: 1em/1.4 Cambria, Georgia, sans-serif;
-  color: #333;
+  x-font: 1em/1.4 Cambria, Georgia, sans-serif;
+  x-color: #333;
 }

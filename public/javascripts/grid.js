@@ -15,6 +15,7 @@ var tick = function() {
 
   this.st += dt;
   this.resetTimer += dt;
+  this.aiTurnAssistTimer += dt;
 
   TWEEN.update();
 
@@ -38,23 +39,25 @@ var tick = function() {
   var intersectsWithEdge = this.ballRayCaster.intersectObject(this.edges[nextEdgeToIntersectWith], true);
 
   if ((intersectsWithEdge.length === 0) && (intersectsWithThisNode.length === 0)) {
-    this.paused = true;
+    //this.paused = true;
     setTimeout(function() {
     //  window.location.reload();
      //o var thisNodeToIntersectWith = ((this.oldestNode) % this.nodes.length);
       this.ball.position.copy(this.nodes[thisNodeToIntersectWith].position);
       this.ball.position.y = 5;
-      this.paused = false; 
+      //this.paused = false; 
       var currentDir = this.dirs[this.oldestNode];
       var currentRot = THREE.Math.degToRad(((currentDir * 90.00) ));
       this.ball.rotation.y = currentRot + (Math.PI / -2.0);
       this.speed = 10.0;
-
     }.bind(this), 333);
+    this.speed = 1000.0;
   }
 
+  var aiTurnAssist = false;
+  var newDir = null;
+
   if (intersectsWithNode.length > 0) {
-    var newDir = null;
     if (Math.random() < 0.7) {
       newDir = dirNotInDir(this.dirs[this.currentNode]);
     } else {
@@ -78,8 +81,17 @@ var tick = function() {
     }
 
     this.dirs[this.currentNode] = newDir;
+
+    //this.turnDir = -1;
+    //if (this.turnDir === 0.0) {
+    //  aiTurnAssist = true;
+    //}
+    if (this.st < 5.0) {
+      this.aiTurnAssistTimer = 0.0; //this.aiTurnAssistTimeout;
+      this.aiTurnAssistFired = false;
+    }
+    this.turnLock = this.currentNode;
   }
-//console.log(this.leftVector.length(), this.resetTimer);
   if (!this.speedUp && this.leftVector.length() > 0.0) {
     if (this.leftVector.x > 0) {
       this.turnDir = 1;
@@ -87,14 +99,20 @@ var tick = function() {
       this.turnDir = -1;
     }
   }
-  if (this.turnDir != 0.0 && this.resetTimer > this.resetTimeout) {
+  if (this.turnLock === this.currentNode && this.aiTurnAssistFired === false && this.aiTurnAssistTimer > this.aiTurnAssistTimeout) {
+    aiTurnAssist = true;
+  }
+  if (aiTurnAssist || (this.turnDir != 0.0 && this.resetTimer > this.resetTimeout)) {
+
+    this.aiTurnAssistFired = true;
+    this.aiTurnLock++;
     //console.log("wtf", this.resetTimer, this.resetTimeout);
     this.leftVector.set(0, 0);
     this.resetTimer = 0.0;
     var oldRot = { r: 0 };
     var oldRad = this.ball.rotation.y;
 
-    if (false) {
+    if (aiTurnAssist) {
       var currentDir = this.dirs[this.oldestNode];
       var currentRot = THREE.Math.degToRad(((currentDir * 90.00) - 90.00));
 
@@ -124,6 +142,9 @@ var tick = function() {
     var ballRotTween = new TWEEN.Tween(oldRot).to(newRot, turn);
     ballRotTween.onUpdate(function() {
       b.rotation.y = oldRad - THREE.Math.degToRad(this.r);
+    });
+    ballRotTween.onComplete(function() {
+      f.turnLock = false;
     });
     ballRotTween.start();
   }
@@ -422,6 +443,10 @@ var main = function(body) {
     resizeTimeout: null,
     turnDir: 0.0,
     startedMusic: false,
+    aiTurnAssistTimer: 0,
+    aiTurnAssistTimeout: 0.1,
+    aiTurnAssistFired: false,
+    turnLock: false,
   };
 
   var fullscreenButton = document.getElementById("fullscreen-button");
