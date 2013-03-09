@@ -1,27 +1,4 @@
-#mods-container, #canvas-container, canvas, body, html {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: white;
-}
-#mods-container {
-  height: 3em;
-  position: absolute;
-  right: 0;
-  background: cyan;
-}
-#canvas-container {
-}
-#buttons-container {
-  height: 3em;
-  width: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0;
-  padding: 0;
-}
-canvas, svg {
+canvas {
   image-rendering: optimizeSpeed;
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-optimize-contrast;
@@ -35,71 +12,41 @@ canvas, svg {
   width: 99% !important;
   height: 99% !important;
 }
+#mods-container, #canvas-container, canvas, body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: white;
+}
+#mods-container {
+  height: 3em;
+  position: absolute;
+  right: 0;
+  background: cyan;
+  font-size: 75%;
+}
+#buttons-container {
+  height: 3em;
+  position: absolute;
+  padding: 0em;
+  margin: 0;
+  font-size: 125%;
+}
 #fullscreen-button {
-  position: absolute; top: 0; left: 0;
   background-color: rgba(0, 255, 0, 0.5);
 }
 #pause-button {
-  position: absolute; top: 0; left: 10%;
   background-color: rgba(255, 0, 0, 0.5);
 }
 #debug-camera-button {
-  position: absolute; top: 0; left: 20%;
   background-color: rgba(0, 0, 255, 0.5);
 }
-#pause-button a:before {
-  left: 43%;
-  top: 25%;
-  width: 5%;
-  height: 50%;
-  border: 4px solid #c55500;
-  border-width: 0 4px;
-  background: transparent;
-}
 a {
-  margin: 1em 1em;
-}
-a:visited {
-  border-bottom: 1px solid #730800;
-  color: #730800;
-}
-a:link, a:visited {
-  border-bottom: 1px solid #c55500;
-  color: #c55500;
-  text-decoration: none;
-}
-a:link, a:visited {
-  border-bottom: 1px solid #c55500;
-  color: #c55500;
-  text-decoration: none;
-}
-li a:link, li a:visited {
   display: block;
-  border: 0;
-  color: #c55500;
-}
-li a:link, li a:visited {
-  display: block;
-  border: 0;
-  color: #c55500;
-}
-li a:before, li a:after {
-  background: #c55500;
-}
-li:before, li:after, li a:before, li a:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-}
-li a:before, li a:after {
-  background: #c55500;
-}
-li:before, li:after, li a:before, li a:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
+  margin: 1em 1em 0 1em;
+  text-decoration: none;
+  font-size: 1em;
+  line-height: 1em;
 }
 li {
   float: left;

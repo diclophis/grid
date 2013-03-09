@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="genericons/genericons.css">
     <script src="http://modgraphz.risingcode.com/modfile.js"></script>
     <script src="http://modgraphz.risingcode.com/modplayer.js"></script>
     <script src="http://modgraphz.risingcode.com/sink.js"></script>
@@ -76,13 +77,14 @@
   <body>
     <div id="canvas-container">
       <ul id="buttons-container">
-        <li>
-          <div id="fullscreen-button"></div>
-        <li>
+        <li id="fullscreen-button">
+          <a class="genericon genericon-maximize" href="maximize"></a>
+        </li>
         <li id="pause-button">
-          <a href="#pause"></a>
+          <a class="genericon genericon-video" href="#pause"></a>
         </li>
         <li id="debug-camera-button">
+          <a class="genericon genericon-image" href="#camera"></a>
         </li>
       </ul>
       <ul id="mods-container">
