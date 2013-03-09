@@ -1,19 +1,19 @@
-#mods, #canvas-container, canvas, body, html {
+#mods-container, #canvas-container, canvas, body, html {
   margin: 0;
   padding: 0;
   overflow: hidden;
   background: white;
 }
-#mods {
+#mods-container {
+  height: 3em;
   position: absolute;
   right: 0;
   background: cyan;
-  padding: 1em;
 }
 #canvas-container {
 }
 #buttons-container {
-  height: 10%;
+  height: 3em;
   width: 100%;
   position: absolute;
   top: 0;
@@ -37,27 +37,27 @@ canvas, svg {
 }
 #fullscreen-button {
   position: absolute; top: 0; left: 0;
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: rgba(0, 255, 0, 0.5);
 }
 #pause-button {
   position: absolute; top: 0; left: 10%;
-  background-color: rgba(0, 255, 0, 0.5);
+  background-color: rgba(255, 0, 0, 0.5);
 }
 #debug-camera-button {
   position: absolute; top: 0; left: 20%;
   background-color: rgba(0, 0, 255, 0.5);
-  width: 10%;
-  x-height: 10%;
 }
-li a:link, li a:visited {
-  display: block;
-  border: 0;
-  color: #c55500;
+#pause-button a:before {
+  left: 43%;
+  top: 25%;
+  width: 5%;
+  height: 50%;
+  border: 4px solid #c55500;
+  border-width: 0 4px;
+  background: transparent;
 }
-li a:link, li a:visited {
-  display: block;
-  border: 0;
-  color: #c55500;
+a {
+  margin: 1em 1em;
 }
 a:visited {
   border-bottom: 1px solid #730800;
@@ -73,14 +73,15 @@ a:link, a:visited {
   color: #c55500;
   text-decoration: none;
 }
-#pause-button a:before {
-  left: 43%;
-  top: 25%;
-  width: 5%;
-  height: 50%;
-  border: 4px solid #c55500;
-  border-width: 0 4px;
-  background: transparent;
+li a:link, li a:visited {
+  display: block;
+  border: 0;
+  color: #c55500;
+}
+li a:link, li a:visited {
+  display: block;
+  border: 0;
+  color: #c55500;
 }
 li a:before, li a:after {
   background: #c55500;
@@ -101,11 +102,7 @@ li:before, li:after, li a:before, li a:after {
   left: 0;
 }
 li {
+  float: left;
   list-style: none;
   height: 100%;
-  width: 10%;
-}
-html, body {
-  x-font: 1em/1.4 Cambria, Georgia, sans-serif;
-  x-color: #333;
 }

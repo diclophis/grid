@@ -85,32 +85,29 @@
         <li id="debug-camera-button">
         </li>
       </ul>
-    <div id="mods">
-      <!--
-      <a href="phuture_sounds.mod">phuture_sounds</a>
-      <a href="mindkick.mod">mindkick</a>
-      <a href="cyberm00n.mod">cyberm00n</a>
-      <a href="psimon_-_queen.mod">psimon_-_queen</a>
-      <a href="speed_chase.mod">speed_chase</a>
-      <a href="beat_it.mod">beat_it</a>
-      <a href="ipanema.mod">ipanema</a>
-      <a href="tocatta.mod">tocatta</a>
-      <a href="sonata.mod">sonata</a>
-      <a href="monday.mod">monday</a>
-      <a href="careless_whisper.mod">careless_whisper</a>
-      <a href="hendrix.mod">hendrix</a>
-      -->
-      <a href="phuture_sounds.mod">phuture_sounds</a>
-    </div>
-    <script type="text/javascript">
-        mods = document.getElementById("mods").getElementsByTagName("a");
-        for (i=0; i<mods.length; i++) {
-          mods[i].onclick = function () {
-            play_mod(this.href);
-            return false;
-          };
-        }
-    </script>
+      <ul id="mods-container">
+        <li>
+          <a href="cyberm00n.mod">cyberm00n</a>
+        </li>
+        <li>
+          <a href="hendrix.mod">hendrix</a>
+        </li>
+        <li>
+          <a href="phuture_sounds.mod">phuture_sounds</a>
+        </li>
+        <li>
+          <a href="speed_chase.mod">speed_chase</a>
+        </li>
+      </ul>
+      <script type="text/javascript">
+          var mods = document.getElementById("mods-container").getElementsByTagName("a");
+          for (i=0; i<mods.length; i++) {
+            mods[i].onclick = function () {
+              play_mod(this.href);
+              return false;
+            };
+          }
+      </script>
     </div>
   </body>
 </html>

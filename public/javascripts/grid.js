@@ -2,13 +2,13 @@ var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
 
-  if (this.paused || dt > 1.0) {
+  if (this.paused) {
     return;
   }
 
-  if (dt > 0.177) {
+  if (dt > 1.0) {
     if (this.subdivide < 3.0) {
-      this.subdivide += 1.0;
+      this.subdivide += 0.1;
     }
     onWindowResize.apply(this);
     return;
@@ -20,16 +20,18 @@ var tick = function() {
 
   TWEEN.update();
 
-  var max_speed = 75;
+  var max_speed = 70;
   if (this.speed < max_speed) {
-    this.speed += 8.0 * dt;
+    this.speed += 10.0 * dt;
   } else {
     this.speed = max_speed;
   }
 
-  var turn = (1 / (this.speed / 10.0)) * 500; //1100;
+  var turn = (1 / (this.speed / 10.0)) * 300; //1100;
 
+  this.ball.translateX(this.speed * dt);
   var foo = new THREE.Vector3(Math.round(this.ball.position.x), this.ball.position.y, Math.round(this.ball.position.z));
+  this.ball.translateX(-this.speed * dt);
 
   this.ballRayCaster.set(foo, this.downDirectionVector);
   var nextNodeToIntersectWith = ((this.oldestNode + 1) % this.nodes.length);
@@ -55,6 +57,8 @@ var tick = function() {
       this.resetTimer = -(this.resetTimeout * 10.0);
       this.lastTurnAssist = this.st;
       this.turnLock = false;
+      this.gameOverCount++;
+      this.aiGraceTimeout += 1.0
     }.bind(this), 33);
     return;
   }
@@ -63,7 +67,7 @@ var tick = function() {
   var newDir = null;
 
   if (intersectsWithNode.length > 0) {
-    if (Math.random() < 0.7) {
+    if (Math.random() < 0.75) {
       newDir = dirNotInDir(this.dirs[this.currentNode]);
     } else {
       newDir = this.dirs[this.currentNode];
@@ -74,7 +78,7 @@ var tick = function() {
     this.edges[this.oldestNode].uuid += this.nodes.length * 2;
 
     //if (this.edges[this.oldestNode].scale.z > 0.7) {
-      this.edges[this.oldestNode].scale.z = 0.4 + (Math.random() * 0.5); //((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
+      this.edges[this.oldestNode].scale.z = 0.5 + (Math.random() * 0.5); //((1 / (this.speed / 10.0)) * 0.9) - (Math.random() * 0.01);
     //}
 
     this.oldestNode++;
@@ -89,7 +93,7 @@ var tick = function() {
 
     this.dirs[this.currentNode] = newDir;
 
-    if (this.st < (this.lastTurnAssist + 5.0)) {
+    if (this.st < (this.lastTurnAssist + this.aiGraceTimeout)) {
       this.aiTurnAssistTimer = 0.0; //this.aiTurnAssistTimeout;
       this.aiTurnAssistFired = false;
     }
@@ -98,6 +102,7 @@ var tick = function() {
     aiTurnAssist = true;
   }
   if (!this.aiTurnAssistFire && (this.turnLock === false) && (!this.speedUp) && (this.leftVector.length() > 0.0)) {
+    this.aiGraceTimeout = 0;
     if (this.leftVector.x > 0) {
       this.turnDir = 1;
     } else {
@@ -452,7 +457,7 @@ var main = function(body) {
     edges: edges,
     nodes: nodes,
     dirs: dirs,
-    resetTimeout: 0.2,
+    resetTimeout: 0.1,
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
@@ -465,8 +470,10 @@ var main = function(body) {
     aiTurnAssistTimer: 0,
     aiTurnAssistTimeout: 0.1,
     aiTurnAssistFired: true,
+    aiGraceTimeout: 0.0,
     lastTurnAssist: 0,
     turnLock: false,
+    gameOverCount: 0,
   };
 
   var fullscreenButton = document.getElementById("fullscreen-button");
