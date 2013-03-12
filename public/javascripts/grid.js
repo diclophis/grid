@@ -2,16 +2,16 @@ var tick = function() {
   requestAnimationFrame(tick.bind(this));
   var dt = this.clock.getDelta();
 
-  if (this.paused) {
+  if (this.paused || dt > (0.16 * 4)) {
     return;
   }
 
-  if (dt > 1.0) {
-    if (this.subdivide < 3.0) {
-      this.subdivide += 0.1;
+  if (dt > 0.34) {
+    if (this.subdivide < 6.0) {
+      this.subdivide += 1.0;
+      onWindowResize.apply(this);
+      return;
     }
-    onWindowResize.apply(this);
-    return;
   }
 
   this.st += dt;
@@ -172,12 +172,14 @@ var tick = function() {
   //this.scene.children.sort(cmp);
   //this.scene.children.reverse();
 
-  this.renderer.clear(false, false, false);
+  //this.renderer.clear(false, false, false);
   if (!this.renderDebugCamera) {
     //if (this.renderer.setViewport) {
     //  this.renderer.setViewport(0, 0, this.wsa.ax, this.wsa.ay);
     //}
-    //this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
+    //if (this.st < 10.0) {
+      this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
+    //}
     this.renderer.render(this.scene, this.camera);
   }
   if (this.renderDebugCamera) {
@@ -194,6 +196,7 @@ var tick = function() {
     //  this.renderer.setViewport(left, bottom, width, height);
     //}
     this.debugCamera.aspect = width / height;
+    this.renderer.render(this.skyBoxScene, this.skyBoxCamera);
     this.renderer.render(this.scene, this.debugCamera);
   }
 };
@@ -353,7 +356,7 @@ var main = function(body) {
 
   var skyBoxCamera = createCamera(wsa, 1000, 60);
   var skyBoxScene = createScene();
-  var skyBoxMaterial = createMeshBasicWireframeMaterial(true);
+  var skyBoxMaterial = createMeshBasicWireframeMaterial(false);
   var skyBox = createSkyBox(skyBoxMaterial, 2);
   skyBoxScene.add(skyBox);
 
