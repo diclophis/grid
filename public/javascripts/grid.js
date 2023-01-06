@@ -67,11 +67,12 @@ var tick = function() {
   var newDir = null;
 
   if (intersectsWithNode.length > 0) {
-    if (Math.random() < 0.75) {
-      newDir = dirNotInDir(this.dirs[this.currentNode]);
-    } else {
-      newDir = this.dirs[this.currentNode];
-    }
+    newDir = 0;
+    //if (Math.random() < 0.75) {
+    //  newDir = dirNotInDir(this.dirs[this.currentNode]);
+    //} else {
+    //  newDir = this.dirs[this.currentNode];
+    //}
     placeNodeAtEdge(this.nodes[this.oldestNode], this.edges[this.currentNode]);
     attachEdgeToNode(this.edges[this.oldestNode], this.nodes[this.oldestNode], newDir);
     this.nodes[this.oldestNode].uuid += this.nodes.length * 2;
@@ -219,7 +220,7 @@ var createNodeObject = function(nodeMaterial) {
   var y = 8.0;
   var z = 16.0;
 
-  var nodeGeometry = new THREE.CubeGeometry(x, y, z, 1, 1, 1, null, true);
+  var nodeGeometry = new THREE.BoxGeometry(x, y, z, 1, 1, 1, null, true);
   var nodeMesh  = new THREE.Mesh(nodeGeometry, nodeMaterial);
   var nodeObject = new THREE.Object3D();
   nodeObject.add(nodeMesh);
@@ -232,7 +233,7 @@ var createEdgeObject = function(edgeMaterial) {
   var y = 0.01;
   var z = 16.0;
 
-  var edgeGeometry = new THREE.CubeGeometry(x, y, z, 1, 1, 1, null, true);
+  var edgeGeometry = new THREE.BoxGeometry(x, y, z, 1, 1, 1, null, true);
   var edgeMesh  = new THREE.Mesh(edgeGeometry, edgeMaterial);
   var edgeObject = new THREE.Object3D();
   edgeObject.scale.z = 0.7;
@@ -370,7 +371,7 @@ var main = function(body) {
   }
 
   renderer.setSize(wsa.x, wsa.y);
-  renderer.autoClear = false;
+  renderer.autoClear = true;
   renderer.sortElements = false;
   renderer.sortObjects = false;
   //renderer.setClearColorHex(0x000000, 1.0);
@@ -380,7 +381,7 @@ var main = function(body) {
   var edges = new Array();
   var dirs = new Array();
 
-  var max = 3;
+  var max = 1;
 
   var uuid = 0;
   for (var i=0; i<max; i++) {
@@ -401,19 +402,22 @@ var main = function(body) {
     console.log(uuid);
   }
 
-  for (var i=0; i<(max); i++) {
-    var randomDir = null;
-    if (i === 0) {
-      randomDir = 1;
-      attachEdgeToNode(edges[i], nodes[i], randomDir);
-    } else {
-      randomDir = dirNotInDir(dirs[i - 1]);
-    }
+  for (var i=0; i<max; i++) {
+    attachEdgeToNode(edges[i], nodes[i], 0);
+    //placeNodeAtEdge(nodes[i], edges[i-1]);
+
+    //var randomDir = null;
+    //if (i === 0) {
+    //  randomDir = 1;
+    //  attachEdgeToNode(edges[i], nodes[i], randomDir);
+    //} else {
+    //  randomDir = dirNotInDir(dirs[i - 1]);
+    //}
     if (i > 0) {
       placeNodeAtEdge(nodes[i], edges[i-1]);
     }
-    attachEdgeToNode(edges[i], nodes[i], randomDir);
-    dirs.push(randomDir);
+    //attachEdgeToNode(edges[i], nodes[i], randomDir);
+    dirs.push(0);
   }
 
   var ball = createBall();
@@ -429,7 +433,6 @@ var main = function(body) {
 
   var thingy = {
     subdivide: subdivide,
-    fps: 35.0,
     then: Date.now(),
     st: 0,
     foward: new THREE.Vector3(0, 0, 0),
@@ -460,7 +463,7 @@ var main = function(body) {
     edges: edges,
     nodes: nodes,
     dirs: dirs,
-    resetTimeout: 0.1,
+    resetTimeout: 1.0,
     resetTimer: 0.0,
     currentNode: max - 1,
     oldestNode: 0,
